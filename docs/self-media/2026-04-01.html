@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>创作者罗盘 · 2026-04-01</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 24px;
+    position: relative;
+  }
+  .screen-inner {
+    max-width: 560px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Intro */
+  .screen-intro {
+    background: #fafafa;
+  }
+  .intro-date {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #aaa;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .intro-text {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.7;
+    color: #1a1a1a;
+  }
+  .intro-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #ccc;
+    animation: bounce 2s ease infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+  }
+
+  /* Story */
+  .screen-story {
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .story-label {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .story-headline {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .story-text {
+    font-size: 17px;
+    line-height: 2;
+    color: #2a2a2a;
+  }
+  .story-text p {
+    margin-bottom: 14px;
+  }
+  .story-text p:last-child {
+    margin-bottom: 0;
+  }
+  .story-text strong {
+    color: #1a1a1a;
+    font-weight: 600;
+    background: linear-gradient(to top, rgba(91,94,166,0.12) 40%, transparent 40%);
+    padding: 0 2px;
+  }
+
+  /* Card (人物/公司/术语) */
+  .screen-card {
+    background: #f5f5fa;
+  }
+  .card-badge {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .card-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 14px;
+  }
+  .card-text {
+    font-size: 17px;
+    line-height: 2;
+    color: #444;
+  }
+  .card-text strong {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  /* Outro */
+  .screen-outro {
+    background: #fafafa;
+  }
+  .outro-text {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: #1a1a1a;
+  }
+  .outro-bye {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #aaa;
+  }
+  .outro-nav {
+    margin-top: 28px;
+  }
+  .outro-nav a {
+    font-size: 13px;
+    color: #5b5ea6;
+    text-decoration: none;
+    padding: 8px 18px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+
+  /* Progress dots */
+  .progress {
+    position: fixed;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s;
+  }
+  .dot.active {
+    background: #5b5ea6;
+    transform: scale(1.5);
+  }
+
+  @media (max-width: 480px) {
+    .screen { padding: 32px 20px; }
+    .intro-text { font-size: 20px; }
+    .story-headline { font-size: 20px; }
+    .story-text { font-size: 16px; line-height: 1.95; }
+    .card-name { font-size: 22px; }
+    .outro-text { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress">
+  <div class="dot  active"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+</div>
+
+<div class="screen screen-intro">
+  <div class="screen-inner">
+    <div class="intro-date">创作者罗盘 · 2026-04-01</div>
+    <div class="intro-text">你知道吗，最近中国的自媒体圈子里发生了不少有意思的事儿。从带货主播翻车到平台悄悄改规则，再到那些大咖们的新动向，我今天给你讲讲几个最值得关注的变化。</div>
+  </div>
+  <div class="intro-hint">↓ 向下滑动</div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#e74c3c">带货内幕</div>
+    <div class="story-headline" style="color:#c0392b">知名主播董宇辉陷入食品安全争议</div>
+    <div class="story-text"><p>说起直播带货，很多人第一想到的就是董宇辉，这哥们的带货能力那确实强。去年他办了个音乐会直播，一天就卖了7000多万块钱的东西。整个2025年，他们团队的销售额甚至突破了210亿。</p><p>但有意思的是，最近他因为带货一种叫&quot;皖西麻黄鸡&quot;的产品，被指品种有问题。你可能觉得这只是个小纠纷，但实际上背后有更深层的事。今年3月20号，国家出台了一个新规定——<strong>《直播电商经营者落实食品安全主体责任监督管理规定》</strong>，等于是给直播带货食品划了条硬红线。这说明监管部门开始动真格了。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <div class="card-name">董宇辉</div>
+    <div class="card-text">抖音头部直播带货主播，因其知识渊博、谈吐幽默在直播间建立了强大的用户信任。他与团队创立的&quot;与辉同行&quot;在2025年销售额超过210亿元，智能家居类商品成为最大贡献品类。<strong>近期因食品品种问题引发争议，反映出直播电商进入规范化阶段。</strong></div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#3498db">平台变局</div>
+    <div class="story-headline" style="color:#2471a3">小红书和抖音暗暗比拼，都在降费吸引商家</div>
+    <div class="story-text"><p>现在很有意思的是，各大平台都在偷偷较劲。抖音电商今年把技术服务费的底线降到了<strong>最低0.6%</strong>，说白了就是想告诉商家——来我这儿卖东西，费用更便宜。</p><p>同时，小红书也没闲着。他们推出了一个&quot;笔记付费&quot;功能，简单说就是让创作者能直接靠内容赚钱，不用非得去带货。而且小红书还成立了个新部门重新整理自己的平台结构。这两家都在想办法留住创作者和商家，因为谁的人多、谁的生态活跃，谁就能赚到钱。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#3498db">🏢 公司卡片</div>
+    <div class="card-name">抖音电商</div>
+    <div class="card-text">抖音集团旗下的电商业务板块，主要通过直播和短视频形式帮助商家售卖商品。<strong>在2026年推行更激进的降费策略，技术服务费降至0.6%底线，目标是争夺更多商家和流量。</strong>是目前国内最大的直播电商平台之一。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#9b59b6">行业趋势</div>
+    <div class="story-headline" style="color:#7d3c98">知识付费重新洗牌，靠噱头骗人的模式快死了</div>
+    <div class="story-text"><p>你有没有注意到，最近知识付费这块也在变化。以前那种&quot;交999块学致富秘诀&quot;、靠营销套路收割用户的模式，现在市场已经开始无情地淘汰它们。</p><p>现在上小红书、小宇宙这些平台的课程，你会发现连<strong>券商的首席经济学家都下场卖课</strong>了。这说明什么呢？说明整个行业正在往更真实、更专业的方向走。用户变聪明了，他们不再买那些虚头巴脑的承诺，更愿意为真才实学掏钱。这其实对整个行业来说是好事——劣币驱逐良币的时代过去了。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#5b5ea6">💡 术语卡片</div>
+    <div class="card-name">知识付费</div>
+    <div class="card-text">简单说，就是把知识、经验、技能打包成课程或内容，用户付钱购买。比如你花99块钱听一个职业规划课、或者花399块学个编程技能，这就是知识付费。<strong>现阶段正在从虚浮的营销噱头向专业化、实用化转变。</strong></div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#e67e22">科技博主新机遇</div>
+    <div class="story-headline" style="color:#ca6f1e">何同学靠YouTube年入近300万，被大企业挖角</div>
+    <div class="story-text"><p>再讲个有意思的——科技博主何同学。这哥们在海外的YouTube账号叫&quot;HTX Studio&quot;，最近有数据显示他的<strong>年收入中位数大约273万人民币</strong>。注意，这只是YouTube这一个平台上的收入。</p><p>更夸张的是，今年3月，荣耀这家手机公司的CEO李健正式聘请何同学当公司顾问。这说明什么？说明大企业现在已经认可了——那些有真才实学的内容创作者，他们的话语权和商业价值远比传统代言人更值钱。何同学之所以能被看重，就是因为他的评测专业、讲解透彻，用户信任度高。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <div class="card-name">何同学</div>
+    <div class="card-text">知名科技数码博主，以深度评测和专业讲解著称。在海外YouTube平台&quot;HTX Studio&quot;账号年收入约273万元人民币。<strong>最近被荣耀公司聘为顾问，代表了大企业对内容创作者价值的重新认可。</strong>体现了硬核创作者在新时代的商业价值提升。</div>
+  </div>
+</div>
+<div class="screen screen-outro">
+  <div class="screen-inner">
+    <div class="outro-text">总的来说，2026年的自媒体和电商圈子在经历一场大调整——不仅监管更严了，而且市场也在无情地淘汰虚浮的东西。赢家往往是那些专业、诚实、有真材实料的创作者和平台。你如果想在这个圈子混，得真本事，这是现在最大的变化。</div>
+    <div class="outro-bye">明天见 👋</div>
+    <div class="outro-nav"><a href="index.html">📚 历史简报</a></div>
+  </div>
+</div>
+
+
+<script>
+  const screens = document.querySelectorAll('.screen');
+  const dots = document.querySelectorAll('.dot');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = [...screens].indexOf(entry.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.5 });
+  screens.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
