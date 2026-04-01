@@ -1,0 +1,38 @@
+{
+  "builders": [
+    {"name": "Andrej Karpathy", "handle": "@karpathy", "role": "AI researcher, ex-Tesla AI"},
+    {"name": "Sam Altman", "handle": "@sama", "role": "OpenAI CEO"},
+    {"name": "Amanda Askell", "handle": "@AmandaAskell", "role": "Anthropic researcher"},
+    {"name": "Alex Albert", "handle": "@alexalbert__", "role": "Anthropic"},
+    {"name": "Kevin Weil", "handle": "@kevinweil", "role": "AI leader"},
+    {"name": "Amjad Masad", "handle": "@amasad", "role": "Replit founder"},
+    {"name": "Guillermo Rauch", "handle": "@rauchg", "role": "Vercel founder"},
+    {"name": "Aaron Levie", "handle": "@levie", "role": "Box CEO"},
+    {"name": "Garry Tan", "handle": "@garrytan", "role": "YC president"},
+    {"name": "Swyx", "handle": "@swyx", "role": "AI developer/commentator"},
+    {"name": "Dan Shipper", "handle": "@danshipper", "role": "Every founder"},
+    {"name": "Matt Turck", "handle": "@mattturck", "role": "AI analyst"},
+    {"name": "Peter Steinberger", "handle": "@steipete", "role": "Developer"},
+    {"name": "Ryo Lu", "handle": "@ryolu_", "role": "Builder"},
+    {"name": "Josh Woodward", "handle": "@joshwoodward", "role": "Builder"},
+    {"name": "Peter Yang", "handle": "@petergyang", "role": "Builder"},
+    {"name": "Nan Yu", "handle": "@thenanyu", "role": "AI expert"},
+    {"name": "Madhu Guru", "handle": "@realmadhuguru", "role": "Builder"},
+    {"name": "Cat Wu", "handle": "@_catwu", "role": "Builder"},
+    {"name": "Thariq", "handle": "@trq212", "role": "AI specialist"},
+    {"name": "Nikunj Kothari", "handle": "@nikunj", "role": "Builder"},
+    {"name": "Aditya Agarwal", "handle": "@adityaag", "role": "Builder"}
+  ],
+  "podcasts": [
+    {"name": "Latent Space", "handle": "@LatentSpacePod"},
+    {"name": "No Priors", "handle": "@NoPriorsPodcast"},
+    {"name": "Unsupervised Learning", "handle": "@RedpointAI"},
+    {"name": "Data Driven NYC", "handle": "@DataDrivenNYC"},
+    {"name": "Training Data", "handle": "playlist series"}
+  ],
+  "blogs": [
+    {"name": "Anthropic Engineering", "url": "https://www.anthropic.com/engineering"},
+    {"name": "Claude Blog", "url": "https://www.anthropic.com/blog"},
+    {"name": "OpenAI Blog", "url": "https://openai.com/blog"}
+  ]
+}
