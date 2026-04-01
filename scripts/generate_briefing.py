@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""每日 AI 简报生成器 — 搜索→JSON→HTML→GitHub Pages→Bark"""
+"""每日 AI 简报 — 中文深度摘要，信息终点而非链接导航"""
 
 import os
 import json
@@ -44,145 +44,117 @@ def call_claude_with_search(prompt):
     round_count = 0
     while True:
         round_count += 1
-        print(f"   [API call #{round_count}]")
+        print(f"   [API #{round_count}]")
         result = call_claude(messages, tools=tools)
         stop_reason = result.get("stop_reason", "")
         content_blocks = result.get("content", [])
-        print(f"   [stop_reason: {stop_reason}, blocks: {len(content_blocks)}]")
-
+        print(f"   [stop: {stop_reason}, blocks: {len(content_blocks)}]")
         if stop_reason == "end_turn":
-            text_parts = [b["text"] for b in content_blocks if b.get("type") == "text"]
-            return "\n".join(text_parts)
-
+            return "\n".join(b["text"] for b in content_blocks if b.get("type") == "text")
         messages.append({"role": "assistant", "content": content_blocks})
-        tool_results = []
-        for b in content_blocks:
-            if b.get("type") == "tool_use":
-                tool_results.append({"type": "tool_result", "tool_use_id": b["id"], "content": "done"})
+        tool_results = [{"type": "tool_result", "tool_use_id": b["id"], "content": "done"}
+                        for b in content_blocks if b.get("type") == "tool_use"]
         if tool_results:
             messages.append({"role": "user", "content": tool_results})
         else:
-            text_parts = [b["text"] for b in content_blocks if b.get("type") == "text"]
-            return "\n".join(text_parts)
+            return "\n".join(b["text"] for b in content_blocks if b.get("type") == "text")
 
 
 def search_and_get_json(builders_data):
     today = datetime.date.today().strftime("%Y-%m-%d")
-    builder_names = ", ".join(b["name"] for b in builders_data["builders"])
+    builder_names = ", ".join(f'{b["name"]} ({b["role"]})' for b in builders_data["builders"])
     podcast_names = ", ".join(p["name"] for p in builders_data["podcasts"])
 
-    # Step 1: 搜索
-    search_prompt = f"""今天是 {today}。搜索以下 AI 领域关键人物和机构的最新动态（最近几天都可以）：
+    # Step 1: 搜索原始信息
+    search_prompt = f"""今天是 {today}。搜索以下 AI 领域关键人物和机构的最新动态（最近一周内都可以）：
 
 人物：{builder_names}
 播客：{podcast_names}
 博客：Anthropic、OpenAI、Google DeepMind
 
-请列出你搜索到的所有重要信息：
-- 谁说了什么/发布了什么
-- **具体的文章/帖子/视频的完整 URL**（不要只给域名首页，要给到具体页面）
-- 来源类型（X/Twitter、博客、YouTube 等）
+对每条信息，尽量详细记录：
+- 谁发布/说了什么
+- 具体的技术细节、观点论据、产品特性
+- 背景和上下文
 
-用中文总结。每条必须附带具体 URL。"""
+用中文记录，越详细越好。"""
 
     print("   Step 1: 搜索...")
     raw_info = call_claude_with_search(search_prompt)
-    print(f"   搜索结果: {len(raw_info)} chars")
+    print(f"   原始: {len(raw_info)} chars")
 
-    # Step 2: 格式化 JSON
-    format_prompt = f"""将以下 AI 行业信息整理为严格 JSON。
+    # Step 2: 生成深度摘要 JSON
+    format_prompt = f"""你是一个中文 AI 行业简报作者。基于以下原始信息，生成一份深度简报。
 
 原始信息：
 ---
 {raw_info}
 ---
 
-直接输出 JSON（不要 ```，不要额外文字）：
+要求：
+1. 每条内容写成 200-400 字的完整中文短文，不是一两句话
+2. 包含：谁（人名+身份）、说了/做了什么（核心内容完整展开）、为什么重要
+3. 读者是中文用户，看不懂英文，不会点链接看原文。你的摘要就是他获取信息的唯一渠道
+4. 语言要有信息密度，不要水字数，但也不要过度压缩丢失关键细节
+
+直接输出 JSON（不要 ```）：
 
 {{
   "date": "{today}",
-  "trend_summary": "一句话总结（中文，20字以内）",
-  "sections": [
+  "trend_summary": "今日趋势一句话（中文，15-25字）",
+  "articles": [
     {{
-      "id": "breaking",
-      "title": "今日要闻",
-      "icon": "🔥",
-      "items": [
-        {{
-          "headline": "标题（中文）",
-          "summary": "2-3句摘要（中文）",
-          "source_name": "来源",
-          "source_url": "具体文章/帖子的完整URL，不是域名首页",
-          "author": "作者名"
-        }}
-      ]
-    }},
-    {{
-      "id": "builders",
-      "title": "Builder 动态",
-      "icon": "👤",
-      "items": [同上]
-    }},
-    {{
-      "id": "media",
-      "title": "播客与博客",
-      "icon": "🎙️",
-      "items": [同上]
+      "tag": "分类标签（如：模型发布/行业观点/产品更新/融资动态/技术博客/播客精华）",
+      "author": "人名",
+      "author_title": "身份（如 OpenAI CEO / Anthropic 研究员）",
+      "title": "这条信息的中文标题（10-20字）",
+      "body": "200-400字的完整中文摘要。分段用 \\n\\n 分隔。"
     }}
   ]
 }}
 
-重要：
-- source_url 必须是具体页面链接（如 https://x.com/karpathy/status/xxx），绝对不能是首页（如 https://x.com）
-- 如果原始信息中没有具体链接，source_url 设为空字符串 ""
-- breaking 放 1-3 条最重要的
-- 没有内容的 section items 设为 []"""
+规则：
+- articles 按重要性排序，最重要的在前
+- 同一个人的多条动态可以合并为一篇
+- 没有实质内容的不要凑数
+- body 里不要出现英文原文，全部翻译为中文"""
 
-    print("   Step 2: JSON...")
+    print("   Step 2: 深度摘要...")
     raw_json = call_claude([{"role": "user", "content": format_prompt}])
-    text_parts = [b["text"] for b in raw_json.get("content", []) if b.get("type") == "text"]
-    text = "\n".join(text_parts).strip()
+    text = "\n".join(b["text"] for b in raw_json.get("content", []) if b.get("type") == "text").strip()
 
     if text.startswith("```"):
-        first_nl = text.find("\n")
-        text = text[first_nl + 1:] if first_nl != -1 else text[3:]
+        text = text.split("\n", 1)[1] if "\n" in text else text[3:]
     if text.endswith("```"):
         text = text[:-3]
     text = text.strip()
-
     print(f"   JSON: {len(text)} chars")
 
-    # 尝试解析，失败则让 Claude 修复
+    # 解析 + 自动修复
     for attempt in range(3):
         try:
             return json.loads(text)
         except json.JSONDecodeError as e:
             if attempt < 2:
-                print(f"   [JSON error attempt {attempt+1}: {e}] fixing...")
-                fix_result = call_claude([{"role": "user", "content": f"以下 JSON 有语法错误，请修复并只输出正确的 JSON（不要 ```）：\n\n{text}"}])
-                text = "\n".join(b["text"] for b in fix_result.get("content", []) if b.get("type") == "text").strip()
+                print(f"   [JSON fix attempt {attempt+1}: {e}]")
+                fix = call_claude([{"role": "user", "content": f"修复这段 JSON 的语法错误，只输出正确 JSON（不要 ```）：\n\n{text}"}])
+                text = "\n".join(b["text"] for b in fix.get("content", []) if b.get("type") == "text").strip()
                 if text.startswith("```"):
                     text = text.split("\n", 1)[1] if "\n" in text else text[3:]
                 if text.endswith("```"):
                     text = text[:-3]
                 text = text.strip()
             else:
-                print(f"   [JSON failed after 3 attempts: {e}]")
-                # 最终回退：用原始搜索内容拆段展示
-                paragraphs = raw_info.split("\n")
-                items = []
-                for p in paragraphs:
-                    p = p.strip()
-                    if len(p) > 10:
-                        items.append({"headline": p[:50], "summary": p, "source_name": "", "source_url": "", "author": ""})
-                    if len(items) >= 15:
-                        break
+                print(f"   [JSON failed]")
                 return {
                     "date": today,
                     "trend_summary": "AI 行业每日动态",
-                    "sections": [{"id": "all", "title": "今日动态", "icon": "📡", "items": items}]
+                    "articles": [{"tag": "简报", "author": "", "author_title": "",
+                                  "title": "今日简报", "body": raw_info[:3000]}]
                 }
 
+
+# ──────────── HTML ────────────
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="zh-CN">
@@ -193,292 +165,173 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   body {{
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", sans-serif;
-    background: #f5f5f7;
-    color: #1d1d1f;
-    line-height: 1.75;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    line-height: 1.85;
     -webkit-font-smoothing: antialiased;
   }}
-  .container {{
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 20px 16px 60px;
-  }}
-  /* Header */
+  .container {{ max-width: 680px; margin: 0 auto; padding: 20px 18px 60px; }}
+
   .header {{
     text-align: center;
-    padding: 36px 0 28px;
-    margin-bottom: 24px;
+    padding: 32px 0 24px;
+    margin-bottom: 20px;
   }}
-  .header-label {{
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 2.5px;
-    color: #6e6e73;
-    margin-bottom: 10px;
-  }}
-  .header h1 {{
-    font-size: 32px;
-    font-weight: 700;
-    color: #1d1d1f;
-    margin-bottom: 6px;
-  }}
-  .header .date {{
-    font-size: 15px;
-    color: #86868b;
-  }}
-  /* Trend */
+  .header-sub {{ font-size: 11px; letter-spacing: 2px; color: #999; text-transform: uppercase; margin-bottom: 8px; }}
+  .header h1 {{ font-size: 26px; font-weight: 700; color: #1a1a1a; }}
+  .header .date {{ font-size: 14px; color: #999; margin-top: 4px; }}
+
   .trend {{
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 16px;
-    padding: 22px 24px;
-    margin-bottom: 32px;
-    color: #fff;
-    font-size: 17px;
-    font-weight: 500;
-    line-height: 1.7;
-    position: relative;
-  }}
-  .trend::after {{
-    content: '💡';
-    font-size: 40px;
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.2;
-  }}
-  /* Section */
-  .section {{
+    background: #f0f0f5;
+    border-left: 4px solid #5b5ea6;
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
     margin-bottom: 28px;
-  }}
-  .section-header {{
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
-  }}
-  .section-icon {{
-    font-size: 20px;
-  }}
-  .section-title {{
-    font-size: 18px;
-    font-weight: 600;
-    color: #1d1d1f;
-  }}
-  .section-count {{
-    font-size: 11px;
-    background: #e8e8ed;
-    color: #6e6e73;
-    padding: 2px 8px;
-    border-radius: 10px;
+    font-size: 16px;
+    color: #333;
     font-weight: 500;
   }}
-  /* Cards */
-  .card {{
+
+  .nav {{ text-align: center; margin-bottom: 24px; }}
+  .nav a {{
+    font-size: 13px; color: #5b5ea6; text-decoration: none;
+    padding: 5px 14px; border: 1px solid #e0e0e0; border-radius: 6px;
+  }}
+
+  .article {{
     background: #fff;
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 10px;
-    text-decoration: none;
-    display: block;
-    color: inherit;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 22px 22px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   }}
-  a.card:hover {{
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    border-color: #667eea;
-    transform: translateY(-1px);
-  }}
-  .card-headline {{
-    font-size: 16px;
-    font-weight: 600;
-    color: #1d1d1f;
-    margin-bottom: 6px;
-    line-height: 1.5;
-  }}
-  .card-summary {{
-    font-size: 14px;
-    color: #424245;
-    line-height: 1.75;
-    margin-bottom: 12px;
-  }}
-  .card-meta {{
+  .article-header {{
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 12px;
-    color: #86868b;
+    margin-bottom: 12px;
     flex-wrap: wrap;
   }}
-  .card-source {{
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #f5f5f7;
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-weight: 500;
-  }}
-  .card-source img {{
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-  }}
-  .card-author {{
-    color: #667eea;
-    font-weight: 500;
-  }}
-  .card-link-icon {{
-    margin-left: auto;
-    color: #667eea;
-    font-size: 14px;
+  .tag {{
+    font-size: 11px;
     font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    color: #fff;
+    white-space: nowrap;
   }}
-  .no-link {{
-    cursor: default;
+  .tag-模型发布 {{ background: #e74c3c; }}
+  .tag-行业观点 {{ background: #3498db; }}
+  .tag-产品更新 {{ background: #2ecc71; }}
+  .tag-融资动态 {{ background: #f39c12; }}
+  .tag-技术博客 {{ background: #9b59b6; }}
+  .tag-播客精华 {{ background: #1abc9c; }}
+  .tag-default {{ background: #7f8c8d; }}
+
+  .author-info {{
+    font-size: 13px;
+    color: #666;
   }}
-  /* Empty */
-  .empty {{
-    text-align: center;
-    padding: 20px;
-    color: #86868b;
-    font-size: 14px;
-    background: #fff;
-    border-radius: 14px;
+  .author-name {{
+    font-weight: 600;
+    color: #1a1a1a;
   }}
-  /* Footer */
+
+  .article-title {{
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }}
+  .article-body {{
+    font-size: 15px;
+    color: #333;
+    line-height: 1.9;
+  }}
+  .article-body p {{
+    margin-bottom: 10px;
+  }}
+  .article-body p:last-child {{
+    margin-bottom: 0;
+  }}
+
   .footer {{
     text-align: center;
-    padding-top: 28px;
+    padding-top: 24px;
     font-size: 12px;
-    color: #86868b;
+    color: #aaa;
   }}
-  .footer a {{ color: #667eea; text-decoration: none; }}
-  /* Archive */
-  .archive-nav {{
-    text-align: center;
-    margin-bottom: 20px;
-  }}
-  .archive-nav a {{
-    color: #667eea;
-    text-decoration: none;
-    font-size: 13px;
-    padding: 6px 16px;
-    border: 1px solid #e8e8ed;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.2s;
-  }}
-  .archive-nav a:hover {{
-    background: #fff;
-    border-color: #667eea;
+
+  @media (max-width: 480px) {{
+    .container {{ padding: 14px 14px 40px; }}
+    .article {{ padding: 18px 16px 14px; }}
+    .article-title {{ font-size: 17px; }}
+    .article-body {{ font-size: 14.5px; }}
   }}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div class="header-label">Follow Builders, Not Influencers</div>
+    <div class="header-sub">Follow Builders, Not Influencers</div>
     <h1>AI 简报</h1>
     <div class="date">{date}</div>
   </div>
 
-  <div class="trend">{trend_summary}</div>
+  <div class="trend">💡 {trend_summary}</div>
 
-  <div class="archive-nav">
-    <a href="index.html">📚 历史简报</a>
-  </div>
+  <div class="nav"><a href="index.html">📚 历史简报</a></div>
 
-  {sections_html}
+  {articles_html}
 
-  <div class="footer">
-    <p>Powered by Claude · 自动生成</p>
-  </div>
+  <div class="footer">自动生成 · Powered by Claude</div>
 </div>
 </body>
 </html>"""
 
 
-def get_favicon_url(source_url):
-    try:
-        from urllib.parse import urlparse
-        parsed = urlparse(source_url)
-        if parsed.hostname:
-            return f"https://www.google.com/s2/favicons?domain={parsed.hostname}&sz=32"
-    except Exception:
-        pass
-    return ""
+TAG_CLASSES = {"模型发布", "行业观点", "产品更新", "融资动态", "技术博客", "播客精华"}
 
 
-def is_valid_link(url):
-    """检查是否是有效的具体链接（不是域名首页）"""
-    if not url:
-        return False
-    from urllib.parse import urlparse
-    parsed = urlparse(url)
-    return bool(parsed.scheme and parsed.hostname and parsed.path and parsed.path != "/")
+def render_html(data):
+    date = html_module.escape(data.get("date", ""))
+    trend = html_module.escape(data.get("trend_summary", ""))
 
+    articles_html = ""
+    for a in data.get("articles", []):
+        tag = a.get("tag", "")
+        tag_class = f"tag-{tag}" if tag in TAG_CLASSES else "tag-default"
+        author = html_module.escape(a.get("author", ""))
+        author_title = html_module.escape(a.get("author_title", ""))
+        title = html_module.escape(a.get("title", ""))
 
-def render_html(briefing_data):
-    date = html_module.escape(briefing_data.get("date", ""))
-    trend = html_module.escape(briefing_data.get("trend_summary", ""))
+        # body: 按 \n\n 分段
+        body_raw = a.get("body", "")
+        paragraphs = [p.strip() for p in body_raw.split("\n\n") if p.strip()]
+        if not paragraphs:
+            paragraphs = [p.strip() for p in body_raw.split("\n") if p.strip()]
+        body_html = "".join(f"<p>{html_module.escape(p)}</p>" for p in paragraphs)
 
-    sections_html = ""
-    for section in briefing_data.get("sections", []):
-        icon = html_module.escape(section.get("icon", ""))
-        title = html_module.escape(section.get("title", ""))
-        items = section.get("items", [])
+        author_line = ""
+        if author:
+            author_line = f'<span class="author-name">{author}</span>'
+            if author_title:
+                author_line += f" · {author_title}"
+            author_line = f'<div class="author-info">{author_line}</div>'
 
-        cards_html = ""
-        if not items:
-            cards_html = '<div class="empty">暂无更新</div>'
-        else:
-            for item in items:
-                headline = html_module.escape(item.get("headline", ""))
-                summary = html_module.escape(item.get("summary", ""))
-                source_name = html_module.escape(item.get("source_name", ""))
-                source_url = item.get("source_url", "")
-                author = html_module.escape(item.get("author", ""))
-
-                has_link = is_valid_link(source_url)
-                favicon = get_favicon_url(source_url) if has_link else ""
-                favicon_img = f'<img src="{html_module.escape(favicon)}" alt="" onerror="this.style.display=\'none\'">' if favicon else ""
-                author_span = f'<span class="card-author">{author}</span>' if author else ""
-
-                if has_link:
-                    card_open = f'<a class="card" href="{html_module.escape(source_url)}" target="_blank" rel="noopener">'
-                    card_close = '</a>'
-                    link_icon = '<span class="card-link-icon">↗</span>'
-                else:
-                    card_open = '<div class="card no-link">'
-                    card_close = '</div>'
-                    link_icon = ''
-
-                cards_html += f"""{card_open}
-  <div class="card-headline">{headline}</div>
-  <div class="card-summary">{summary}</div>
-  <div class="card-meta">
-    <span class="card-source">{favicon_img}{source_name}</span>
-    {author_span}
-    {link_icon}
+        articles_html += f"""<div class="article">
+  <div class="article-header">
+    <span class="tag {html_module.escape(tag_class)}">{html_module.escape(tag)}</span>
+    {author_line}
   </div>
-{card_close}
-"""
-
-        sections_html += f"""<div class="section">
-  <div class="section-header">
-    <span class="section-icon">{icon}</span>
-    <span class="section-title">{title}</span>
-    <span class="section-count">{len(items)}</span>
-  </div>
-  {cards_html}
+  <div class="article-title">{title}</div>
+  <div class="article-body">{body_html}</div>
 </div>
 """
 
-    return HTML_TEMPLATE.format(date=date, trend_summary=trend, sections_html=sections_html)
+    return HTML_TEMPLATE.format(date=date, trend_summary=trend, articles_html=articles_html)
 
 
 INDEX_TEMPLATE = """<!DOCTYPE html>
@@ -486,53 +339,44 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 简报 · 归档</title>
+<title>AI 简报</title>
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
-  body {{ font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; background:#f5f5f7; color:#1d1d1f; min-height:100vh; }}
+  body {{ font-family: -apple-system, "PingFang SC", sans-serif; background:#fafafa; color:#1a1a1a; }}
   .container {{ max-width:600px; margin:0 auto; padding:40px 16px; }}
-  h1 {{ text-align:center; font-size:28px; font-weight:700; margin-bottom:6px; }}
-  .subtitle {{ text-align:center; color:#86868b; font-size:13px; margin-bottom:28px; }}
+  h1 {{ text-align:center; font-size:24px; margin-bottom:6px; }}
+  .sub {{ text-align:center; color:#999; font-size:12px; margin-bottom:28px; }}
   .list a {{
     display:flex; justify-content:space-between; align-items:center;
-    padding:15px 18px; margin-bottom:8px;
-    background:#fff; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06);
-    color:#1d1d1f; text-decoration:none; font-size:15px; font-weight:500;
-    transition: all 0.2s;
+    padding:14px 18px; margin-bottom:8px;
+    background:#fff; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    color:#1a1a1a; text-decoration:none; font-size:15px;
   }}
-  .list a:hover {{ box-shadow:0 4px 12px rgba(0,0,0,0.1); transform:translateX(4px); }}
-  .list a span {{ color:#86868b; font-size:18px; }}
+  .list a:active {{ background:#f5f5f5; }}
+  .list a span {{ color:#ccc; }}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>📡 AI 简报</h1>
-  <div class="subtitle">Follow Builders, Not Influencers</div>
-  <div class="list">
-    {links}
-  </div>
+  <h1>AI 简报</h1>
+  <div class="sub">Follow Builders, Not Influencers</div>
+  <div class="list">{links}</div>
 </div>
 </body>
 </html>"""
 
 
-def save_html(briefing_data, html_content):
+def save_html(data, html_content):
     os.makedirs(DOCS_DIR, exist_ok=True)
-    date = briefing_data["date"]
-    filepath = os.path.join(DOCS_DIR, f"{date}.html")
-    with open(filepath, "w", encoding="utf-8") as f:
+    date = data["date"]
+    with open(os.path.join(DOCS_DIR, f"{date}.html"), "w", encoding="utf-8") as f:
         f.write(html_content)
-    print(f"   HTML: {filepath}")
 
     html_files = sorted(
         [f for f in os.listdir(DOCS_DIR) if f.endswith(".html") and f != "index.html"],
         reverse=True
     )
-    links = ""
-    for fname in html_files:
-        d = fname.replace(".html", "")
-        links += f'    <a href="{fname}">AI 简报 · {d} <span>→</span></a>\n'
-
+    links = "".join(f'<a href="{fn}">{fn.replace(".html","")} <span>→</span></a>\n' for fn in html_files)
     with open(os.path.join(DOCS_DIR, "index.html"), "w", encoding="utf-8") as f:
         f.write(INDEX_TEMPLATE.format(links=links))
 
@@ -540,34 +384,29 @@ def save_html(briefing_data, html_content):
 
 
 def send_bark(title, body, url=None):
-    bark_base = BARK_URL.rstrip("/")
     payload = {"title": title, "body": body, "level": "timeSensitive"}
     if url:
         payload["url"] = url
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(bark_base, data=data, headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(BARK_URL.rstrip("/"), data=data, headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=10) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
 def main():
-    print("📡 开始生成每日 AI 简报...")
-
+    print("📡 AI 简报...")
     builders_data = load_builders()
-    print(f"   {len(builders_data['builders'])} builders")
+    briefing = search_and_get_json(builders_data)
+    n = len(briefing.get("articles", []))
+    print(f"   {n} articles")
 
-    print("   搜索 + 生成...")
-    briefing_data = search_and_get_json(builders_data)
-    print(f"   {len(briefing_data.get('sections', []))} sections")
+    html = render_html(briefing)
+    url = save_html(briefing, html)
+    print(f"   {url}")
 
-    print("   渲染 HTML...")
-    html_content = render_html(briefing_data)
-    page_url = save_html(briefing_data, html_content)
-    print(f"   URL: {page_url}")
-
-    today = briefing_data.get("date", datetime.date.today().strftime("%Y-%m-%d"))
-    send_bark("📡 AI 简报已更新", f"AI 简报 · {today}", url=page_url)
-    print("✅ 完成")
+    today = briefing.get("date", datetime.date.today().strftime("%Y-%m-%d"))
+    send_bark("📡 AI 简报已更新", f"{today} · {n} 条深度摘要", url=url)
+    print("✅ done")
 
 
 if __name__ == "__main__":
