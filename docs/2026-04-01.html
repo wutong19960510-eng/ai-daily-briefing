@@ -5,151 +5,136 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI 简报 · 2026-04-01</title>
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #14141f;
-    --card: #1a1a2e;
-    --card-hover: #222240;
-    --border: #2a2a45;
-    --text: #e0e0f0;
-    --text-secondary: #8888aa;
-    --accent: #6c5ce7;
-    --accent-light: #a29bfe;
-    --fire: #fd7272;
-    --green: #55efc4;
-    --yellow: #ffeaa7;
-  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.7;
-    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
   }
   .container {
-    max-width: 800px;
+    max-width: 720px;
     margin: 0 auto;
-    padding: 24px 16px 60px;
+    padding: 20px 16px 60px;
   }
   /* Header */
   .header {
     text-align: center;
-    padding: 40px 0 32px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 32px;
+    padding: 36px 0 28px;
+    margin-bottom: 24px;
   }
   .header-label {
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 3px;
-    color: var(--accent-light);
-    margin-bottom: 8px;
+    letter-spacing: 2.5px;
+    color: #6e6e73;
+    margin-bottom: 10px;
   }
   .header h1 {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
-    margin-bottom: 12px;
-    background: linear-gradient(135deg, var(--accent-light), var(--green));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #1d1d1f;
+    margin-bottom: 6px;
   }
   .header .date {
-    font-size: 14px;
-    color: var(--text-secondary);
+    font-size: 15px;
+    color: #86868b;
   }
-  /* Trend summary */
+  /* Trend */
   .trend {
-    background: linear-gradient(135deg, var(--accent) 0%, #3d3d8f 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 16px;
-    padding: 20px 24px;
-    margin-bottom: 36px;
-    font-size: 16px;
-    line-height: 1.8;
+    padding: 22px 24px;
+    margin-bottom: 32px;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.7;
     position: relative;
-    overflow: hidden;
   }
-  .trend::before {
+  .trend::after {
     content: '💡';
-    font-size: 48px;
+    font-size: 40px;
     position: absolute;
-    right: 16px;
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
-    opacity: 0.15;
+    opacity: 0.2;
   }
-  .trend p { position: relative; z-index: 1; }
   /* Section */
   .section {
-    margin-bottom: 36px;
+    margin-bottom: 28px;
   }
   .section-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
+    gap: 8px;
+    margin-bottom: 14px;
   }
   .section-icon {
-    font-size: 22px;
+    font-size: 20px;
   }
   .section-title {
     font-size: 18px;
     font-weight: 600;
+    color: #1d1d1f;
   }
   .section-count {
-    font-size: 12px;
-    background: var(--border);
-    color: var(--text-secondary);
+    font-size: 11px;
+    background: #e8e8ed;
+    color: #6e6e73;
     padding: 2px 8px;
     border-radius: 10px;
+    font-weight: 500;
   }
   /* Cards */
   .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    background: #fff;
+    border-radius: 14px;
     padding: 18px 20px;
-    margin-bottom: 12px;
-    transition: all 0.2s ease;
-    cursor: pointer;
+    margin-bottom: 10px;
     text-decoration: none;
     display: block;
     color: inherit;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
   }
-  .card:hover {
-    background: var(--card-hover);
-    border-color: var(--accent);
+  a.card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    border-color: #667eea;
     transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(108, 92, 231, 0.15);
   }
   .card-headline {
     font-size: 16px;
     font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--text);
+    color: #1d1d1f;
+    margin-bottom: 6px;
+    line-height: 1.5;
   }
   .card-summary {
     font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.7;
+    color: #424245;
+    line-height: 1.75;
     margin-bottom: 12px;
   }
   .card-meta {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     font-size: 12px;
-    color: var(--text-secondary);
+    color: #86868b;
+    flex-wrap: wrap;
   }
   .card-source {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: var(--surface);
-    padding: 4px 10px;
+    gap: 5px;
+    background: #f5f5f7;
+    padding: 3px 10px;
     border-radius: 6px;
+    font-weight: 500;
   }
   .card-source img {
     width: 14px;
@@ -157,49 +142,53 @@
     border-radius: 3px;
   }
   .card-author {
-    color: var(--accent-light);
+    color: #667eea;
+    font-weight: 500;
   }
   .card-link-icon {
     margin-left: auto;
-    color: var(--accent-light);
-    font-size: 16px;
+    color: #667eea;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .no-link {
+    cursor: default;
   }
   /* Empty */
   .empty {
     text-align: center;
-    padding: 24px;
-    color: var(--text-secondary);
+    padding: 20px;
+    color: #86868b;
     font-size: 14px;
+    background: #fff;
+    border-radius: 14px;
   }
   /* Footer */
   .footer {
     text-align: center;
-    padding-top: 32px;
-    border-top: 1px solid var(--border);
+    padding-top: 28px;
     font-size: 12px;
-    color: var(--text-secondary);
+    color: #86868b;
   }
-  .footer a {
-    color: var(--accent-light);
-    text-decoration: none;
-  }
-  /* Archive link */
+  .footer a { color: #667eea; text-decoration: none; }
+  /* Archive */
   .archive-nav {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   .archive-nav a {
-    color: var(--accent-light);
+    color: #667eea;
     text-decoration: none;
     font-size: 13px;
-    padding: 6px 14px;
-    border: 1px solid var(--border);
+    padding: 6px 16px;
+    border: 1px solid #e8e8ed;
     border-radius: 8px;
+    font-weight: 500;
     transition: all 0.2s;
   }
   .archive-nav a:hover {
-    background: var(--card);
-    border-color: var(--accent);
+    background: #fff;
+    border-color: #667eea;
   }
 </style>
 </head>
@@ -211,9 +200,7 @@
     <div class="date">2026-04-01</div>
   </div>
 
-  <div class="trend">
-    <p>AI代理成为企业核心，多家机构发布重量级模型和工具</p>
-  </div>
+  <div class="trend">简报生成中遇到格式问题</div>
 
   <div class="archive-nav">
     <a href="index.html">📚 历史简报</a>
@@ -221,114 +208,93 @@
 
   <div class="section">
   <div class="section-header">
-    <span class="section-icon">🔥</span>
-    <span class="section-title">今日要闻</span>
-    <span class="section-count">3</span>
-  </div>
-  <a class="card" href="https://replit.com" target="_blank" rel="noopener">
-  <div class="card-headline">Replit完成4亿美元D轮融资，估值达90亿美元</div>
-  <div class="card-summary">Replit CEO Amjad Masad宣布完成4亿美元D轮融资，公司估值达到90亿美元。同时推出强大的新代理Agent 4，能够构建应用，创建和维护整个公司。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=replit.com&amp;sz=32" alt="" onerror="this.style.display='none'">Replit官方</span>
-    <span class="card-author">@Amjad Masad</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://openai.com" target="_blank" rel="noopener">
-  <div class="card-headline">OpenAI关闭Sora视频生成模型</div>
-  <div class="card-summary">Sam Altman在3月24日通知员工OpenAI将关闭视频生成模型Sora，仅在推出专属移动应用6个月后及与迪士尼协议签署3个月后。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=openai.com&amp;sz=32" alt="" onerror="this.style.display='none'">OpenAI</span>
-    <span class="card-author">@Sam Altman</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://anthropic.com" target="_blank" rel="noopener">
-  <div class="card-headline">Anthropic开发更强大新模型Claude Mythos</div>
-  <div class="card-summary">Anthropic正在开发比之前任何模型都更强大的新AI模型，代表AI性能的阶跃变化。泄露的草稿博客文章显示新模型称为Claude Mythos。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=anthropic.com&amp;sz=32" alt="" onerror="this.style.display='none'">Anthropic</span>
-    <span class="card-author">@Anthropic</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-
-</div>
-<div class="section">
-  <div class="section-header">
-    <span class="section-icon">👤</span>
-    <span class="section-title">Builder 动态</span>
-    <span class="section-count">5</span>
-  </div>
-  <a class="card" href="https://nopriors.com" target="_blank" rel="noopener">
-  <div class="card-headline">Karpathy发布auto-research开源项目</div>
-  <div class="card-summary">Andrej Karpathy在No Priors播客上讨论自己的工作状态变化，从80%自己写代码转变为由AI代理完成80%。同时发布了auto-research开源AI项目，展示自主模型自我改进能力。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=nopriors.com&amp;sz=32" alt="" onerror="this.style.display='none'">No Priors播客</span>
-    <span class="card-author">@Andrej Karpathy</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://world.com" target="_blank" rel="noopener">
-  <div class="card-headline">Sam Altman推出World身份项目AgentKit</div>
-  <div class="card-summary">Sam Altman联合创办的身份项目World推出AgentKit工具包，让AI代理可以携带加密证明证实由独特人类支持。同时从Helion董事会主席职位退出。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=world.com&amp;sz=32" alt="" onerror="this.style.display='none'">World官方</span>
-    <span class="card-author">@Sam Altman</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://vercel.com" target="_blank" rel="noopener">
-  <div class="card-headline">Vercel CEO预测agent manager将定义2026企业</div>
-  <div class="card-summary">Guillermo Rauch预测2026年定义企业角色的将是协调AI代理舰队的agent manager。表示AI代理正在把所有人变成迷你首席执行官。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=vercel.com&amp;sz=32" alt="" onerror="this.style.display='none'">Vercel官方</span>
-    <span class="card-author">@Guillermo Rauch</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://github.com" target="_blank" rel="noopener">
-  <div class="card-headline">Garry Tan分享开源Claude Code设置</div>
-  <div class="card-summary">Y Combinator CEO Garry Tan在SXSW表示对AI代理工作如此兴奋以至于每晚仅睡4小时。他在GitHub上分享开源Claude Code设置，包含6个有观点的技能。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=github.com&amp;sz=32" alt="" onerror="this.style.display='none'">GitHub</span>
-    <span class="card-author">@Garry Tan</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://box.com" target="_blank" rel="noopener">
-  <div class="card-headline">Aaron Levie讨论企业AI采用障碍</div>
-  <div class="card-summary">Box CEO Aaron Levie指出企业AI采用步调不均，最大障碍不是模型能力，而是需要重新设计工作流。AI代理需要关键的业务背景信息才能有效运作。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=box.com&amp;sz=32" alt="" onerror="this.style.display='none'">Box官方</span>
-    <span class="card-author">@Aaron Levie</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-
-</div>
-<div class="section">
-  <div class="section-header">
-    <span class="section-icon">🎙️</span>
-    <span class="section-title">播客与博客</span>
+    <span class="section-icon">📄</span>
+    <span class="section-title">原始内容</span>
     <span class="section-count">1</span>
   </div>
-  <a class="card" href="https://latentspace.com" target="_blank" rel="noopener">
-  <div class="card-headline">Latent Space播客突破1000万听众</div>
-  <div class="card-summary">Latent Space播客在2025年超过1000万读者和听众，提供AI工程新闻、论文和采访，涵盖代码生成、多模态、AI代理、GPU基础设施等领域基础模型。</div>
+  <div class="card no-link">
+  <div class="card-headline">简报</div>
+  <div class="card-summary">我会帮你搜索这些AI领域关键人物和机构的最新动态。让我逐一进行搜索。
+让我继续搜索其他机构和更多人物的最新信息。
+根据我的搜索结果，我为您编译了一份2026年4月1日前AI领域关键人物和机构的最新动态。由于篇幅限制，我无法列举您提供的所有人物（许多没有找到最近的报道），但这里是我发现的重要动态：
+
+## 🔴 **关键人物最新动态**
+
+### **Andrej Karpathy**
+
+1. **AutoResearch 项目** - 3月17日
+   - 
+Karpathy 在一项实验中让一个AI编码代理连续运行两天，期间进行了700次不同的实验
+
+   - 
+该项目于2026年3月推出，其开源框架获得了巨大关注
+
+   - URL: https://fortune.com/2026/03/17/andrej-karpathy-loop-autonomous-ai-agents-future/
+
+2. **CS231n讲座分享** - 3月18日
+   - 
+Karpathy 分享了他的2016年斯坦福CS231n卷积神经网络讲座链接
+
+   - URL: https://blockchain.news/ainews/andrej-karpathy-shares-historical-ai-talk-key-lessons-for-2026-llm-and-agent-strategy-expert-analysis
+
+3. **AI工作风险分析** - 3月中旬
+   - 
+Karpathy 发布了一份显示每个职业对AI易损性的图表，不同职位获得0-10分，年收入超过10万美元的职业得分最差（6.7），年收入低于3.5万美元的职业得分最低（3.4）
+
+   - URL: https://fortune.com/2026/03/15/andrej-karpathy-openai-cofounder-us-labor-market-exposure-ai-white-collar-jobs-professionals/
+
+4. **X上的编程感悟** - 最近
+   - 
+&quot;我从未感到作为程序员如此落后。这个职业正在被彻底重构，程序员贡献的部分越来越少，我有种感觉如果我能正确地组合利用过去一年开放的资源，我可能会强大10倍&quot;
+
+   - URL: https://x.com/karpathy/status/2004607146781278521
+
+---
+
+### **Sam Altman (OpenAI CEO)**
+
+1. **法庭审判安排** - 4月27日开庭
+   - 
+由Elon Musk针对Sam Altman的欺诈指控诉讼定于2026年4月27日在奥克兰联邦地区法院进行陪审团选拔
+
+   - URL: https://chatgptiseatingtheworld.com/2026/01/17/the-trial-of-the-century-elon-musk-v-sam-altman-starts-monday-april-27-2026-at-800-a-m-with-jury-selection-and-breakfast/
+
+2. **2026年OpenAI计划** - 最近采访
+   - 
+Altman在Alex Kantrowitz采访中表示AI模型的下一步飞跃不是&quot;更高的IQ&quot;，而是对现有用户体验的AI优先重新设计，并暗示Q1 2026会有大升级
+
+   - URL: https://www.theneurondaily.com/p/sam-altman-just-laid-out-openai-s-plan-for-2026
+
+3. **ChatGPT记忆功能与IPO计划**
+   - 
+OpenAI的真正护城河是内存。Altman的深度选择加入内存愿景将从根本上改变人们使用ChatGPT的方式
+
+   - 
+Altman表示OpenAI将不会在2026年上市
+
+   - URL: https://www.cmswire.com/digital-experience/i-spoke-with-sam-altman-what-openais-future-actually-looks-like/
+
+---
+
+### **Amanda Askell (Anthropic AI伦理哲学家)**
+
+1. **Claude宪法更新** - 1月2026
+   - 
+Askell是最新版本Claude宪法的主要作者，该文件于2026年1月发布，旨在解决日益增长的先进AI模型的能力和新兴风险
+
+   - URL: https://www.fastcompany.com/91479037/anthropic-c</div>
   <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=latentspace.com&amp;sz=32" alt="" onerror="this.style.display='none'">Latent Space</span>
-    <span class="card-author">@Latent Space团队</span>
-    <span class="card-link-icon">↗</span>
+    <span class="card-source"></span>
+    
+    
   </div>
-</a>
+</div>
 
 </div>
 
 
   <div class="footer">
-    <p>Powered by Claude · 数据来源: Web Search</p>
-    <p style="margin-top:4px"><a href="https://github.com/zarazhangrui/follow-builders">Follow Builders</a> 灵感</p>
+    <p>Powered by Claude · 自动生成</p>
   </div>
 </div>
 </body>
