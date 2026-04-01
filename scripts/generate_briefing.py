@@ -543,24 +543,26 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 
 def save_html(data, html_content, config=None):
     config = config or {}
-    os.makedirs(DOCS_DIR, exist_ok=True)
+    theme_id = config.get("theme_id", "default")
+    theme_dir = os.path.join(DOCS_DIR, theme_id)
+    os.makedirs(theme_dir, exist_ok=True)
     date = data["date"]
-    with open(os.path.join(DOCS_DIR, f"{date}.html"), "w", encoding="utf-8") as f:
+    with open(os.path.join(theme_dir, f"{date}.html"), "w", encoding="utf-8") as f:
         f.write(html_content)
 
     html_files = sorted(
-        [f for f in os.listdir(DOCS_DIR) if f.endswith(".html") and f != "index.html"],
+        [f for f in os.listdir(theme_dir) if f.endswith(".html") and f != "index.html"],
         reverse=True
     )
     links = "".join(f'<a href="{fn}">{fn.replace(".html","")} <span>→</span></a>\n' for fn in html_files)
     index_title = html_module.escape(config.get("title", "每日简报"))
     index_subtitle = html_module.escape(config.get("subtitle", ""))
-    with open(os.path.join(DOCS_DIR, "index.html"), "w", encoding="utf-8") as f:
+    with open(os.path.join(theme_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(INDEX_TEMPLATE.format(links=links, index_title=index_title, index_subtitle=index_subtitle))
 
     if PAGES_BASE_URL:
-        return f"{PAGES_BASE_URL}/{date}.html"
-    return os.path.join(DOCS_DIR, f"{date}.html")
+        return f"{PAGES_BASE_URL}/{theme_id}/{date}.html"
+    return os.path.join(theme_dir, f"{date}.html")
 
 
 def send_bark(title, body, url=None):
