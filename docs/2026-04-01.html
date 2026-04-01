@@ -7,323 +7,224 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", sans-serif;
-    background: #f5f5f7;
-    color: #1d1d1f;
-    line-height: 1.75;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    line-height: 1.85;
     -webkit-font-smoothing: antialiased;
   }
-  .container {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 20px 16px 60px;
-  }
-  /* Header */
+  .container { max-width: 680px; margin: 0 auto; padding: 20px 18px 60px; }
+
   .header {
     text-align: center;
-    padding: 36px 0 28px;
-    margin-bottom: 24px;
+    padding: 32px 0 24px;
+    margin-bottom: 20px;
   }
-  .header-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 2.5px;
-    color: #6e6e73;
-    margin-bottom: 10px;
-  }
-  .header h1 {
-    font-size: 32px;
-    font-weight: 700;
-    color: #1d1d1f;
-    margin-bottom: 6px;
-  }
-  .header .date {
-    font-size: 15px;
-    color: #86868b;
-  }
-  /* Trend */
+  .header-sub { font-size: 11px; letter-spacing: 2px; color: #999; text-transform: uppercase; margin-bottom: 8px; }
+  .header h1 { font-size: 26px; font-weight: 700; color: #1a1a1a; }
+  .header .date { font-size: 14px; color: #999; margin-top: 4px; }
+
   .trend {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 16px;
-    padding: 22px 24px;
-    margin-bottom: 32px;
-    color: #fff;
-    font-size: 17px;
-    font-weight: 500;
-    line-height: 1.7;
-    position: relative;
-  }
-  .trend::after {
-    content: '💡';
-    font-size: 40px;
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.2;
-  }
-  /* Section */
-  .section {
+    background: #f0f0f5;
+    border-left: 4px solid #5b5ea6;
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
     margin-bottom: 28px;
-  }
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .section-icon {
-    font-size: 20px;
-  }
-  .section-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1d1d1f;
-  }
-  .section-count {
-    font-size: 11px;
-    background: #e8e8ed;
-    color: #6e6e73;
-    padding: 2px 8px;
-    border-radius: 10px;
+    font-size: 16px;
+    color: #333;
     font-weight: 500;
   }
-  /* Cards */
-  .card {
+
+  .nav { text-align: center; margin-bottom: 24px; }
+  .nav a {
+    font-size: 13px; color: #5b5ea6; text-decoration: none;
+    padding: 5px 14px; border: 1px solid #e0e0e0; border-radius: 6px;
+  }
+
+  .article {
     background: #fff;
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 10px;
-    text-decoration: none;
-    display: block;
-    color: inherit;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 22px 22px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   }
-  a.card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    border-color: #667eea;
-    transform: translateY(-1px);
-  }
-  .card-headline {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1d1d1f;
-    margin-bottom: 6px;
-    line-height: 1.5;
-  }
-  .card-summary {
-    font-size: 14px;
-    color: #424245;
-    line-height: 1.75;
-    margin-bottom: 12px;
-  }
-  .card-meta {
+  .article-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 12px;
-    color: #86868b;
+    margin-bottom: 12px;
     flex-wrap: wrap;
   }
-  .card-source {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #f5f5f7;
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-weight: 500;
-  }
-  .card-source img {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-  }
-  .card-author {
-    color: #667eea;
-    font-weight: 500;
-  }
-  .card-link-icon {
-    margin-left: auto;
-    color: #667eea;
-    font-size: 14px;
+  .tag {
+    font-size: 11px;
     font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    color: #fff;
+    white-space: nowrap;
   }
-  .no-link {
-    cursor: default;
+  .tag-模型发布 { background: #e74c3c; }
+  .tag-行业观点 { background: #3498db; }
+  .tag-产品更新 { background: #2ecc71; }
+  .tag-融资动态 { background: #f39c12; }
+  .tag-技术博客 { background: #9b59b6; }
+  .tag-播客精华 { background: #1abc9c; }
+  .tag-default { background: #7f8c8d; }
+
+  .author-info {
+    font-size: 13px;
+    color: #666;
   }
-  /* Empty */
-  .empty {
-    text-align: center;
-    padding: 20px;
-    color: #86868b;
-    font-size: 14px;
-    background: #fff;
-    border-radius: 14px;
+  .author-name {
+    font-weight: 600;
+    color: #1a1a1a;
   }
-  /* Footer */
+
+  .article-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .article-body {
+    font-size: 15px;
+    color: #333;
+    line-height: 1.9;
+  }
+  .article-body p {
+    margin-bottom: 10px;
+  }
+  .article-body p:last-child {
+    margin-bottom: 0;
+  }
+
   .footer {
     text-align: center;
-    padding-top: 28px;
+    padding-top: 24px;
     font-size: 12px;
-    color: #86868b;
+    color: #aaa;
   }
-  .footer a { color: #667eea; text-decoration: none; }
-  /* Archive */
-  .archive-nav {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  .archive-nav a {
-    color: #667eea;
-    text-decoration: none;
-    font-size: 13px;
-    padding: 6px 16px;
-    border: 1px solid #e8e8ed;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-  .archive-nav a:hover {
-    background: #fff;
-    border-color: #667eea;
+
+  @media (max-width: 480px) {
+    .container { padding: 14px 14px 40px; }
+    .article { padding: 18px 16px 14px; }
+    .article-title { font-size: 17px; }
+    .article-body { font-size: 14.5px; }
   }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div class="header-label">Follow Builders, Not Influencers</div>
+    <div class="header-sub">Follow Builders, Not Influencers</div>
     <h1>AI 简报</h1>
     <div class="date">2026-04-01</div>
   </div>
 
-  <div class="trend">AI代理工程成主流，OpenAI关闭Sora，Anthropic推进前沿研究</div>
+  <div class="trend">💡 AI代理自主研究突破，企业管理重心从人转向AI协调，安全隐患频现</div>
 
-  <div class="archive-nav">
-    <a href="index.html">📚 历史简报</a>
-  </div>
+  <div class="nav"><a href="index.html">📚 历史简报</a></div>
 
-  <div class="section">
-  <div class="section-header">
-    <span class="section-icon">🔥</span>
-    <span class="section-title">今日要闻</span>
-    <span class="section-count">3</span>
+  <div class="article">
+  <div class="article-header">
+    <span class="tag tag-default">技术突破</span>
+    <div class="author-info"><span class="author-name">Andrej Karpathy</span> · AI研究员，前特斯拉AI负责人</div>
   </div>
-  <a class="card" href="https://slate.com/technology/2026/03/ai-openai-sam-altman-disney-sora-shutdown.html" target="_blank" rel="noopener">
-  <div class="card-headline">OpenAI关闭Sora视频生成模型，推出神秘新模型Spud</div>
-  <div class="card-summary">Sam Altman宣布关闭Sora视频生成模型，仅在推出6个月后，同时停止ChatGPT视频功能。OpenAI计划推出代号为&quot;Spud&quot;的新模型，承诺将加速经济发展。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=slate.com&amp;sz=32" alt="" onerror="this.style.display='none'">Slate</span>
-    <span class="card-author">Slate编辑部</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://www.anthropic.com/news" target="_blank" rel="noopener">
-  <div class="card-headline">Anthropic发布Sonnet 4.6，进行最大规模AI定性研究</div>
-  <div class="card-summary">Anthropic邀请81000名Claude.ai用户参与同类最大的多语言定性研究。新发布的Sonnet 4.6在编码、代理和大规模专业工作中提供前沿性能。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=www.anthropic.com&amp;sz=32" alt="" onerror="this.style.display='none'">Anthropic官方新闻</span>
-    <span class="card-author">Anthropic团队</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://www.nextbigfuture.com/2026/03/andrej-karpathy-on-code-agents-autoresearch-and-the-self-improvement-loopy-era-of-ai.html" target="_blank" rel="noopener">
-  <div class="card-headline">Andrej Karpathy：AI时代已进入代理工程阶段</div>
-  <div class="card-summary">Andrej Karpathy表示我们已进入代理工程时代，人类不再编写大多数代码，而是指导、监督和协调代理。技术专业知识仍是倍增器，但人类贡献变得稀少而珍贵。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=www.nextbigfuture.com&amp;sz=32" alt="" onerror="this.style.display='none'">NextBigFuture</span>
-    <span class="card-author">Andrej Karpathy</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-
+  <div class="article-title">自主研究框架让AI可自主优化训练方案</div>
+  <div class="article-body"><p>Karpathy在2026年3月发布了一个名为&quot;自主研究&quot;的框架，允许AI代理在单个GPU上自主进行机器学习实验。在一项两天的实验中，系统连续运行了700个不同的实验，期间发现了20个优化方案来改进小型语言模型的训练效率。该系统每小时可执行约12个实验，一晚上可累积近100个测试结果。</p><p>Karpathy在3月8日的推特发言中强调，自主研究框架的下一阶段是让代理系统实现大规模异步协作，类似于分布式科学计算的模式。他还表达了对行业变化的深刻思考，称：&quot;作为编程人员，我从未感到这样的落后。这个职业正在被剧烈重构……如果正确整合过去一年推出的技术，我感觉可以获得10倍的能力。&quot;这说明AI代理不仅能加速研究本身，还将根本改变从业者的工作方式和效率。</p></div>
 </div>
-<div class="section">
-  <div class="section-header">
-    <span class="section-icon">👤</span>
-    <span class="section-title">Builder 动态</span>
-    <span class="section-count">3</span>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-行业观点">行业观点</span>
+    <div class="author-info"><span class="author-name">Guillermo Rauch</span> · Vercel创始人兼CEO</div>
   </div>
-  <a class="card" href="https://techcrunch.com/2026/03/23/sam-altman-openai-fusion-energy-board-helion/" target="_blank" rel="noopener">
-  <div class="card-headline">Sam Altman下台Helion董事长职位，OpenAI与Anthropic关系紧张</div>
-  <div class="card-summary">OpenAI首席执行官Sam Altman因公司间对话报道而从核聚变公司Helion董事长职位上下台。同时，Altman在内部Slack消息中表示正试图&quot;拯救&quot;Anthropic，并私下埋怨Anthropic CEO Dario Amodei多年来试图削弱他。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=techcrunch.com&amp;sz=32" alt="" onerror="this.style.display='none'">TechCrunch &amp; Axios</span>
-    <span class="card-author">TechCrunch编辑部</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://www.coindesk.com/tech/2026/03/17/sam-altman-s-world-teams-up-with-coinbase-to-prove-there-is-a-real-person-behind-every-ai-transaction" target="_blank" rel="noopener">
-  <div class="card-headline">Sam Altman的World推出AgentKit，证明AI背后有真实身份</div>
-  <div class="card-summary">World项目与Coinbase合作推出AgentKit工具包，让AI代理携带密码证明其由World ID系统支持且背后有真实人类。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=www.coindesk.com&amp;sz=32" alt="" onerror="this.style.display='none'">CoinDesk</span>
-    <span class="card-author">CoinDesk编辑部</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://www.latent.space/p/box" target="_blank" rel="noopener">
-  <div class="card-headline">Aaron Levie：2026年将是知识工作代理的时代</div>
-  <div class="card-summary">Box CEO Aaron Levie在Latent Space播客中预测2026年的核心故事是知识工作代理的兴起，认为这是继代码代理之后的下一个重要发展。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=www.latent.space&amp;sz=32" alt="" onerror="this.style.display='none'">Latent Space Podcast</span>
-    <span class="card-author">Aaron Levie</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-
+  <div class="article-title">2026年的经理人角色将转变为AI代理协调者</div>
+  <div class="article-body"><p>Vercel CEO Rauch在最近的采访中指出，2026年企业最关键的角色将是&quot;代理管理者&quot;——一个协调AI代理群的人。他明确表示：&quot;2026年的经理人是代理管理者&quot;，说明商业竞争中最重要的技能不再是管理人类，而是管理人工智能代理。</p><p>Rauch的判断基于Vercel平台的实际增长数据：2月是该公司创纪录的增长月，由Claude Code等AI编码代理生成的可部署软件推动。Vercel的v0产品已增长至300万用户，专注于可靠性和质量。不过Rauch也暴露了黑暗面——Vercel最近关闭了一个由朝鲜操作人员运营的网络，他们利用该平台进行针对工程师的虚假AI招聘面试。他还警告企业员工可能出现前所未有的&quot;影子IT&quot;浪潮，提示企业需要提前制定应对策略。</p></div>
 </div>
-<div class="section">
-  <div class="section-header">
-    <span class="section-icon">🎙️</span>
-    <span class="section-title">播客与博客</span>
-    <span class="section-count">2</span>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-行业观点">行业观点</span>
+    <div class="author-info"><span class="author-name">Sam Altman</span> · OpenAI CEO</div>
   </div>
-  <a class="card" href="https://www.latent.space/p/science" target="_blank" rel="noopener">
-  <div class="card-headline">Latent Space推出新的AI for Science播客</div>
-  <div class="card-summary">Latent Space团队（Swyx + Alessio）推出专注于AI科学应用的新播客频道，旨在缩小明显潜力与供应缺乏之间的差距。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=www.latent.space&amp;sz=32" alt="" onerror="this.style.display='none'">Latent Space Substack</span>
-    <span class="card-author">Swyx &amp; Alessio</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-<a class="card" href="https://www.claude.com/blog/improving-frontend-design-through-skills" target="_blank" rel="noopener">
-  <div class="card-headline">Anthropic发布前端设计改进博文</div>
-  <div class="card-summary">Anthropic最近发布关于通过Skills改进前端设计的技术博文，展示Claude在设计领域的应用。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=www.claude.com&amp;sz=32" alt="" onerror="this.style.display='none'">Claude Blog</span>
-    <span class="card-author">Anthropic团队</span>
-    <span class="card-link-icon">↗</span>
-  </div>
-</a>
-
+  <div class="article-title">OpenAI转向AI优先设计，企业成2026主要关注点</div>
+  <div class="article-body"><p>Altman在最近采访中表示，下一个AI模型的提升不是&quot;更多IQ&quot;，而是要实现AI优先的用户体验设计，停止将聊天机器人粗暴地贴在旧工作流上。他暗示Q1 2026会有重大升级来体现这一理念。</p><p>Altman将记忆功能视为OpenAI真正的护城河。他为ChatGPT设想的深度、可选的记忆功能将从根本上改变人们的使用方式。一旦用户将历史、决策和信任投入平台，就会产生强大的转换成本，形成网络效应。值得关注的是，OpenAI的战略重心正在发生转变——API业务的增速已经超过ChatGPT消费者产品。Altman解释早期AI模型不足以服务企业，但现在这个瓶颈已突破，企业客户将是2026年公司的主要关注点。为支撑这一战略，OpenAI计划在2026年底前将员工数量翻倍，从4500人达到8000人，新增职位主要分布在产品开发、工程、研究和销售部门。</p></div>
 </div>
-<div class="section">
-  <div class="section-header">
-    <span class="section-icon">🚀</span>
-    <span class="section-title">产品发布</span>
-    <span class="section-count">1</span>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-融资动态">融资动态</span>
+    <div class="author-info"><span class="author-name">Amjad Masad</span> · Replit创始人兼CEO</div>
   </div>
-  <a class="card" href="https://www.infoq.com/news/2026/03/vercel-json-render/" target="_blank" rel="noopener">
-  <div class="card-headline">Vercel开源JSON-Render，AI可直接生成结构化UI</div>
-  <div class="card-summary">Vercel在Apache 2.0许可下开源json-render框架，使AI模型能从自然语言提示创建结构化用户界面。自1月发布以来已获13000+星标，支持React、Vue、Svelte等多个框架。</div>
-  <div class="card-meta">
-    <span class="card-source"><img src="https://www.google.com/s2/favicons?domain=www.infoq.com&amp;sz=32" alt="" onerror="this.style.display='none'">InfoQ</span>
-    <span class="card-author">InfoQ编辑部</span>
-    <span class="card-link-icon">↗</span>
+  <div class="article-title">Replit获4亿美元融资，估值达90亿美元</div>
+  <div class="article-body"><p>Replit在最近宣布获得4亿美元的D轮融资，由Georgian领投，将公司估值推升至90亿美元。这笔融资体现了投资者对这家云IDE平台的强烈看好。</p><p>Masad认为当前形势正在转变，企业越来越认识到需要拥抱AI，赋权更广泛的员工参与软件创建。他强调Replit的核心使命是民主化软件创建，核心理念不仅关乎写代码，而是让任何人无论技术背景如何都能构建和部署应用。平台已有超过15万名付费客户，正在证明其将庞大免费用户基础转换为可持续高增长业务模式的能力。Masad设定了到2026年底达到10亿美元年度收入的雄心勃勃的目标，这说明Replit对AI编码民主化趋势的信心程度。</p></div>
+</div>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-行业观点">行业观点</span>
+    <div class="author-info"><span class="author-name">Aaron Levie</span> · Box CEO</div>
   </div>
-</a>
-
+  <div class="article-title">AI token成本趋零将重构企业软件竞争格局</div>
+  <div class="article-body"><p>Box CEO Levie预测到2026年AI token成本将接近零，这对企业软件的利润率、AI创业的估值以及整个技术行业的竞争动态都有巨大影响。</p><p>Levie进一步分析了在成本趋零时代的竞争优势模式。他观察到：&quot;我确实认为你开始看到如何拥有护城河的模式出现，这是代理、它所使用的数据、该代理的域名特异性程度以及显然是模型的能力之间的关系。&quot;这说明未来竞争力不在于模型本身，而在于数据和垂直化应用。</p><p>Levie还提出了一个关键的经济学观点：大多数公司做的工作比经济上有用的要少，因为他们受时间和劳动成本限制。如果这些限制缓解，工作量会扩大。他举律师的例子说明：如果AI让法律团队以两倍速度审查合同，公司不会将律师数量减半，而是以两倍速度运行该流程，减少瓶颈，更快响应客户，可能增加销售。这意味着AI的出现会创造新的工作机会，而非单纯的替代。</p></div>
+</div>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-行业观点">行业观点</span>
+    <div class="author-info"><span class="author-name">Garry Tan</span> · Y Combinator主席</div>
+  </div>
+  <div class="article-title">编码代理市场饱和，垂直市场才是下一个独角兽藏身地</div>
+  <div class="article-body"><p>Garry Tan在2月21日发表了重要文章指出AI代理市场存在明显的机会不对等。他建议：如果你现在正在构建，应该停止在50%的红海编码代理市场中竞争。相反，应该看向医疗、法律、金融等垂直市场，那才是下一个300个独角兽藏身的地方。</p><p>这一观点正得到YC数据的验证。Tan在3月12日开源了他的GStack设置，这个创新配置使用专业的skill文件来模拟整个工程组织，允许用户以CEO、工程师或代码审查人的身份咨询AI。短短几天内，GStack就在GitHub上积累了近20,000个星标和2,200个fork，体现了工程团队对AI代理协调工具的渴望。更值得关注的是，YC冬季2026年班级中有14家公司在演示日前达到100万美元年度经常性收入，这是任何班级的最高记录，说明AI创业的成熟度和市场需求都在快速增长。</p></div>
+</div>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-模型发布">模型发布</span>
+    <div class="author-info"><span class="author-name">Anthropic研究团队</span> · Anthropic</div>
+  </div>
+  <div class="article-title">Claude Mythos模型泄露，代表性能质变</div>
+  <div class="article-body"><p>Anthropic正在开发一款新的AI模型&quot;Claude Mythos&quot;，根据泄露的草稿文件，该公司表示这个模型代表&quot;性能的质变&quot;，是&quot;迄今为止构建的最强大&quot;的模型。泄露文件表明公司认为该新模型会带来前所未有的网络安全风险，这也解释了为什么其发布时间表暂未公开。</p><p>除了Mythos，泄露文件还讨论了一个新的模型层级&quot;Capybara&quot;，比现有的Opus更大、更强大，但成本也更高。相比前一代Claude Opus 4.6，Capybara在软件编码、学术推理和网络安全测试中获得了显著更高的分数。这说明Anthropic正在构建从不同能力等级的模型矩阵，以满足不同应用场景的需求。这种分层策略与业界其他公司的做法相似，旨在实现性能、成本和安全性的平衡。</p></div>
+</div>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-产品更新">产品更新</span>
+    <div class="author-info"><span class="author-name">Amanda Askell</span> · Anthropic研究员，Claude人格对齐负责人</div>
+  </div>
+  <div class="article-title">AI人格对齐成关键研究方向，伦理与实现相融合</div>
+  <div class="article-body"><p>Amanda Askell目前领导Anthropic的人格对齐团队，负责训练Claude模型展现好奇心等积极特征，并开发新的微调技术。2026年，《华尔街日报》称她的工作是&quot;教Claude如何做好&quot;，《纽约客》则描述她&quot;监督Claude的灵魂&quot;。</p><p>Askell是最新版Claude宪法的主要作者，该宪法在2026年1月发布，目的是应对高级AI模型的新兴风险。她将工作重点描述为帮助模型&quot;理解和掌握宪法&quot;，通过合成数据生成和强化学习技术实现这一目标。在3月30日的视频会议中，Askell讨论了她在Anthropic塑造Claude角色中的作用。她认为自己的哲学背景使其能够掌握AI行为的微妙问题。通过想象理想的人在AI面临的情况中可能如何表现，她将伦理理论与实践实施联系起来，增强引导AI模型的道德框架。这种方法论对于确保AI系统的可靠性和安全性具有重要意义。</p></div>
+</div>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-default">安全事件</span>
+    <div class="author-info"><span class="author-name">安全研究人员Chaofan Shou</span> · 独立安全研究人员</div>
+  </div>
+  <div class="article-title">Claude Code源代码通过配置漏洞被完整暴露</div>
+  <div class="article-body"><p>3月31日，安全研究人员Chaofan Shou发现Anthropic旗舰AI编码工具Claude Code的整个源代码通过npm包中配置不当的source-map文件(cli.js.map)被暴露。这个60MB的映射文件允许完整重建该工具的TypeScript代码库，暴露了1,906个专有文件。</p><p>泄露的内容包括内部API、遥测系统、加密工具和进程间通信协议等敏感信息。这次事件反映了AI公司在快速发展过程中面临的安全挑战——在追求功能迭代和市场速度的同时，安全配置和代码保护方面出现了明显漏洞。这不是Anthropic近期唯一的安全事件，多起数据泄露事件暴露了这家高速增长的AI公司在安全基础设施上可能存在的短板。对于整个AI行业而言，这是一个警示：当技术日新月异时，安全运维和配置管理不能被忽视。</p></div>
+</div>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-default">机构动态</span>
+    <div class="author-info"><span class="author-name">Anthropic</span> · Anthropic</div>
+  </div>
+  <div class="article-title">Anthropic成立专门研究所应对AI社会挑战</div>
+  <div class="article-body"><p>3月11日，Anthropic推出了&quot;Anthropic研究所&quot;，这是一个专注于对抗AI可能施加的社会挑战的新研究部门。Anthropic联合创始人Jack Clark将领导该研究所，并担任公共利益部门主任。该研究所拥有跨学科的机器学习工程师、经济学家和社会科学家团队。</p><p>这一举措表明Anthropic在高速发展过程中也在重视AI的社会影响和长期安全问题。除此之外，Anthropic在3月还有多项公告：3月12日向Claude合作伙伴网络投资1亿美元，扩大生态合作；3月10日，Sydney成为Anthropic在亚太地区的第四个办公室，体现其全球扩张战略。这些动作说明Anthropic不仅在模型能力上竞争，也在建立围绕AI安全和社会治理的标准和框架。</p></div>
+</div>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-产品更新">产品更新</span>
+    <div class="author-info"><span class="author-name">OpenAI</span> · OpenAI</div>
+  </div>
+  <div class="article-title">Codex迎来五大更新，实现工程流程完全自动化</div>
+  <div class="article-body"><p>2026年3月对OpenAI Codex来说是繁忙的一个月，包含五个主要更新：插件系统、自动化触发器、安全代理、Windows版本和GPT-5.4 mini集成。</p><p>这些更新中最有意义的是插件系统和自动化触发器。插件允许Codex连接到Sentry和Datadog等开发工具链，扩展了其与企业工具生态的集成能力。更关键的是自动化触发器功能，它使Codex能自动响应GitHub事件，创造了完全自动化的工程管道：问题到达→自动修复→自动打开拉取请求。这种端到端的自动化能力意味着传统的手工代码审查和修复流程可以被大幅压缩，这正是前面Rauch所说的&quot;代理管理者&quot;时代的具体体现。Windows版本的发布则说明OpenAI在扩大Codex的用户覆盖范围，不只是针对专业开发者。</p></div>
+</div>
+<div class="article">
+  <div class="article-header">
+    <span class="tag tag-default">产品调整</span>
+    <div class="author-info"><span class="author-name">OpenAI</span> · OpenAI</div>
+  </div>
+  <div class="article-title">OpenAI悄然停止Sora公开API，呼应经济可持续性问题</div>
+  <div class="article-body"><p>最令人意外的发展是OpenAI在3月24日悄悄停止了Sora公开API，提前30天通知所有用户，官方理由是视频生成在规模上的经济不可持续。</p><p>这个决定反映了AI产品商业化中的一个现实挑战：即使模型技术本身已经突破，但在大规模、低成本的商业部署中仍会遇到经济可行性问题。Sora作为一个生成式视频模型，其计算成本和推理成本都非常高，与Box CEO Levie所说的&quot;token成本趋零&quot;的理想状态还有很大距离。这也说明并非所有AI能力都能立即商业化，某些应用场景可能需要等待底层成本优化或更高效的算法突破。这对AI创业者而言是个重要提示：不是所有技术都能快速变成赚钱的产品。</p></div>
 </div>
 
 
-  <div class="footer">
-    <p>Powered by Claude · 自动生成</p>
-  </div>
+  <div class="footer">自动生成 · Powered by Claude</div>
 </div>
 </body>
 </html>
