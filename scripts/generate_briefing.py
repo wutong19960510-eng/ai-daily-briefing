@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
-"""每日 AI 简报生成器 — 搜索 AI builder 动态，生成中文简报，存入 Notion，推送 Bark"""
+"""每日 AI 简报生成器 — 搜索→结构化JSON→HTML→GitHub Pages→Notion→Bark"""
 
 import os
 import json
 import datetime
 import urllib.request
-import urllib.parse
+import html as html_module
 
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
 NOTION_TOKEN = os.environ["NOTION_TOKEN"]
 BARK_URL = os.environ["BARK_URL"]
 BRIEFING_PAGE_ID = os.environ.get("NOTION_BRIEFING_PAGE_ID", "335930ef-6924-81c0-830e-e8ada800a5c0")
+PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "https://wutong19960510-eng.github.io/ai-daily-briefing")
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+DOCS_DIR = os.path.join(REPO_ROOT, "docs")
 
 
 def load_builders():
@@ -21,15 +24,9 @@ def load_builders():
 
 
 def call_claude(messages, tools=None, model="claude-haiku-4-5-20251001"):
-    """调用 Anthropic Messages API"""
-    body = {
-        "model": model,
-        "max_tokens": 4096,
-        "messages": messages,
-    }
+    body = {"model": model, "max_tokens": 8192, "messages": messages}
     if tools:
         body["tools"] = tools
-
     data = json.dumps(body).encode("utf-8")
     headers = {
         "Content-Type": "application/json",
@@ -38,172 +35,525 @@ def call_claude(messages, tools=None, model="claude-haiku-4-5-20251001"):
     }
     if tools:
         headers["anthropic-beta"] = "web-search-2025-03-05"
-    req = urllib.request.Request(
-        "https://api.anthropic.com/v1/messages",
-        data=data,
-        headers=headers,
-    )
+    req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=data, headers=headers)
     with urllib.request.urlopen(req, timeout=180) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
 def call_claude_with_search(prompt):
-    """调用 Claude 并启用 web_search 工具，自动处理多轮调用"""
     tools = [{"type": "web_search_20250305", "name": "web_search", "max_uses": 10}]
     messages = [{"role": "user", "content": prompt}]
-
-    # 循环处理 tool_use 响应
     round_count = 0
     while True:
         round_count += 1
-        print(f"   [API 调用 #{round_count}]")
+        print(f"   [API call #{round_count}]")
         result = call_claude(messages, tools=tools)
         stop_reason = result.get("stop_reason", "")
-        print(f"   [stop_reason: {stop_reason}, content blocks: {len(result.get('content', []))}]")
-
-        # 打印 content block 类型
-        for block in result.get("content", []):
-            btype = block.get("type", "unknown")
-            if btype == "text":
-                print(f"   [text block: {len(block.get('text', ''))} chars]")
-            elif btype == "web_search_tool_result":
-                print(f"   [web_search_tool_result: {len(block.get('content', []))} results]")
-            else:
-                print(f"   [block type: {btype}]")
+        content_blocks = result.get("content", [])
+        print(f"   [stop_reason: {stop_reason}, blocks: {len(content_blocks)}]")
 
         if stop_reason == "end_turn":
-            # 提取最终文本
-            text_parts = []
-            for block in result.get("content", []):
-                if block.get("type") == "text":
-                    text_parts.append(block["text"])
+            text_parts = [b["text"] for b in content_blocks if b.get("type") == "text"]
             return "\n".join(text_parts)
 
-        # 如果还有 tool_use，把 assistant 回复和 tool results 加入消息
-        assistant_content = result.get("content", [])
-        messages.append({"role": "assistant", "content": assistant_content})
-
-        # 构建 tool results
+        messages.append({"role": "assistant", "content": content_blocks})
         tool_results = []
-        for block in assistant_content:
-            if block.get("type") == "web_search_tool_result":
-                # web_search 结果已经内联，不需要额外处理
-                continue
-            if block.get("type") == "tool_use":
-                tool_results.append({
-                    "type": "tool_result",
-                    "tool_use_id": block["id"],
-                    "content": "Search completed.",
-                })
-
+        for b in content_blocks:
+            if b.get("type") == "tool_use":
+                tool_results.append({"type": "tool_result", "tool_use_id": b["id"], "content": "done"})
         if tool_results:
             messages.append({"role": "user", "content": tool_results})
         else:
-            # 没有需要处理的 tool_use，直接返回文本
-            text_parts = []
-            for block in result.get("content", []):
-                if block.get("type") == "text":
-                    text_parts.append(block["text"])
+            text_parts = [b["text"] for b in content_blocks if b.get("type") == "text"]
             return "\n".join(text_parts)
 
 
-def generate_briefing_content(builders_data):
-    """生成简报内容"""
+def search_and_get_json(builders_data):
     today = datetime.date.today().strftime("%Y-%m-%d")
     builder_names = ", ".join(b["name"] for b in builders_data["builders"])
     podcast_names = ", ".join(p["name"] for p in builders_data["podcasts"])
 
-    prompt = f"""今天是 {today}。你是一个 AI 行业简报助手。
+    prompt = f"""今天是 {today}。你是 AI 行业简报助手。
 
-请搜索以下 AI 领域关键人物最近 24 小时的重要动态、观点和发布：
+搜索以下 AI 领域关键人物最近 24 小时的重要动态：
 {builder_names}
 
-同时关注以下播客是否有新内容：
-{podcast_names}
+同时关注播客新内容：{podcast_names}
+同时关注 Anthropic、OpenAI、Google DeepMind 官方博客。
 
-同时关注 Anthropic、OpenAI、Google DeepMind 官方博客的最新文章。
+请输出 **严格 JSON**（不要 markdown 代码块，不要额外文字），格式如下：
 
-请生成一份中文简报，格式要求：
-1. 标题：AI 简报 · {today}
-2. 分为几个板块：
-   - 🔥 今日要闻（最重要的 1-3 条）
-   - 👤 Builder 动态（按人分列重要发言/发布）
-   - 🎙️ 播客/博客更新（如有）
-   - 💡 一句话总结今日趋势
-3. 每条附上信息来源（谁说的/哪篇文章）
-4. 语言：中文，简洁有力，不要废话
-5. 如果某人最近 24 小时没有重要动态，不要硬凑，跳过即可"""
+{{
+  "date": "{today}",
+  "trend_summary": "一句话总结今日 AI 趋势（中文）",
+  "sections": [
+    {{
+      "id": "breaking",
+      "title": "今日要闻",
+      "icon": "🔥",
+      "items": [
+        {{
+          "headline": "标题（中文）",
+          "summary": "2-3句摘要（中文）",
+          "source_name": "来源名称（如 X/Twitter, Anthropic Blog）",
+          "source_url": "https://原始链接",
+          "author": "作者名"
+        }}
+      ]
+    }},
+    {{
+      "id": "builders",
+      "title": "Builder 动态",
+      "icon": "👤",
+      "items": [...]
+    }},
+    {{
+      "id": "media",
+      "title": "播客与博客",
+      "icon": "🎙️",
+      "items": [...]
+    }}
+  ]
+}}
 
-    return call_claude_with_search(prompt)
+规则：
+- 只收录有真实搜索结果支撑的内容，不要编造
+- source_url 必须是真实可访问的链接
+- 没有动态的人不要硬凑，跳过
+- 每个 section 的 items 可以为空数组
+- headline 和 summary 用中文"""
+
+    raw = call_claude_with_search(prompt)
+
+    # 清理可能的 markdown 包裹
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+    if text.endswith("```"):
+        text = text[:-3]
+    text = text.strip()
+
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as e:
+        print(f"   [JSON parse error: {e}]")
+        print(f"   [Raw output: {text[:500]}]")
+        # 回退：用纯文本包装
+        return {
+            "date": today,
+            "trend_summary": "简报生成异常，请查看原始内容",
+            "sections": [{
+                "id": "raw", "title": "原始内容", "icon": "📄",
+                "items": [{"headline": "简报内容", "summary": raw[:2000], "source_name": "", "source_url": "", "author": ""}]
+            }]
+        }
 
 
-def create_notion_page(title, content):
-    """在 Notion 简报页面下创建子页面"""
-    # 将内容按段落拆分为 Notion blocks
-    paragraphs = content.split("\n")
-    children = []
-    for para in paragraphs:
-        text = para.strip()
-        if not text:
-            continue
-        # 检测标题
-        if text.startswith("# "):
-            children.append({
-                "object": "block",
-                "type": "heading_1",
-                "heading_1": {
-                    "rich_text": [{"type": "text", "text": {"content": text[2:]}}]
-                },
-            })
-        elif text.startswith("## "):
-            children.append({
-                "object": "block",
-                "type": "heading_2",
-                "heading_2": {
-                    "rich_text": [{"type": "text", "text": {"content": text[3:]}}]
-                },
-            })
-        elif text.startswith("### "):
-            children.append({
-                "object": "block",
-                "type": "heading_3",
-                "heading_3": {
-                    "rich_text": [{"type": "text", "text": {"content": text[4:]}}]
-                },
-            })
-        elif text.startswith("- ") or text.startswith("* "):
-            children.append({
-                "object": "block",
-                "type": "bulleted_list_item",
-                "bulleted_list_item": {
-                    "rich_text": [{"type": "text", "text": {"content": text[2:]}}]
-                },
-            })
+HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 简报 · {date}</title>
+<style>
+  :root {{
+    --bg: #0a0a0f;
+    --surface: #14141f;
+    --card: #1a1a2e;
+    --card-hover: #222240;
+    --border: #2a2a45;
+    --text: #e0e0f0;
+    --text-secondary: #8888aa;
+    --accent: #6c5ce7;
+    --accent-light: #a29bfe;
+    --fire: #fd7272;
+    --green: #55efc4;
+    --yellow: #ffeaa7;
+  }}
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }}
+  .container {{
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }}
+  /* Header */
+  .header {{
+    text-align: center;
+    padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }}
+  .header-label {{
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent-light);
+    margin-bottom: 8px;
+  }}
+  .header h1 {{
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--accent-light), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }}
+  .header .date {{
+    font-size: 14px;
+    color: var(--text-secondary);
+  }}
+  /* Trend summary */
+  .trend {{
+    background: linear-gradient(135deg, var(--accent) 0%, #3d3d8f 100%);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 36px;
+    font-size: 16px;
+    line-height: 1.8;
+    position: relative;
+    overflow: hidden;
+  }}
+  .trend::before {{
+    content: '💡';
+    font-size: 48px;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.15;
+  }}
+  .trend p {{ position: relative; z-index: 1; }}
+  /* Section */
+  .section {{
+    margin-bottom: 36px;
+  }}
+  .section-header {{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }}
+  .section-icon {{
+    font-size: 22px;
+  }}
+  .section-title {{
+    font-size: 18px;
+    font-weight: 600;
+  }}
+  .section-count {{
+    font-size: 12px;
+    background: var(--border);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }}
+  /* Cards */
+  .card {{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+  }}
+  .card:hover {{
+    background: var(--card-hover);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(108, 92, 231, 0.15);
+  }}
+  .card-headline {{
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }}
+  .card-summary {{
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }}
+  .card-meta {{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }}
+  .card-source {{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }}
+  .card-source img {{
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }}
+  .card-author {{
+    color: var(--accent-light);
+  }}
+  .card-link-icon {{
+    margin-left: auto;
+    color: var(--accent-light);
+    font-size: 16px;
+  }}
+  /* Empty */
+  .empty {{
+    text-align: center;
+    padding: 24px;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }}
+  /* Footer */
+  .footer {{
+    text-align: center;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }}
+  .footer a {{
+    color: var(--accent-light);
+    text-decoration: none;
+  }}
+  /* Archive link */
+  .archive-nav {{
+    text-align: center;
+    margin-bottom: 24px;
+  }}
+  .archive-nav a {{
+    color: var(--accent-light);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.2s;
+  }}
+  .archive-nav a:hover {{
+    background: var(--card);
+    border-color: var(--accent);
+  }}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-label">Follow Builders, Not Influencers</div>
+    <h1>AI 简报</h1>
+    <div class="date">{date}</div>
+  </div>
+
+  <div class="trend">
+    <p>{trend_summary}</p>
+  </div>
+
+  <div class="archive-nav">
+    <a href="index.html">📚 历史简报</a>
+  </div>
+
+  {sections_html}
+
+  <div class="footer">
+    <p>Powered by Claude · 数据来源: Web Search</p>
+    <p style="margin-top:4px"><a href="https://github.com/zarazhangrui/follow-builders">Follow Builders</a> 灵感</p>
+  </div>
+</div>
+</body>
+</html>"""
+
+
+def get_favicon_url(source_url):
+    """从 URL 提取 favicon"""
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(source_url)
+        if parsed.hostname:
+            return f"https://www.google.com/s2/favicons?domain={parsed.hostname}&sz=32"
+    except Exception:
+        pass
+    return ""
+
+
+def render_html(briefing_data):
+    date = html_module.escape(briefing_data.get("date", ""))
+    trend = html_module.escape(briefing_data.get("trend_summary", ""))
+
+    sections_html = ""
+    for section in briefing_data.get("sections", []):
+        icon = html_module.escape(section.get("icon", ""))
+        title = html_module.escape(section.get("title", ""))
+        items = section.get("items", [])
+
+        cards_html = ""
+        if not items:
+            cards_html = '<div class="empty">暂无更新</div>'
         else:
-            # 普通段落，Notion rich_text 限制 2000 字符
-            while text:
-                chunk = text[:2000]
-                text = text[2000:]
-                children.append({
-                    "object": "block",
-                    "type": "paragraph",
-                    "paragraph": {
-                        "rich_text": [{"type": "text", "text": {"content": chunk}}]
-                    },
-                })
+            for item in items:
+                headline = html_module.escape(item.get("headline", ""))
+                summary = html_module.escape(item.get("summary", ""))
+                source_name = html_module.escape(item.get("source_name", ""))
+                source_url = item.get("source_url", "")
+                author = html_module.escape(item.get("author", ""))
+                favicon = get_favicon_url(source_url) if source_url else ""
+
+                favicon_img = f'<img src="{html_module.escape(favicon)}" alt="" onerror="this.style.display=\'none\'">' if favicon else ""
+                author_span = f'<span class="card-author">@{author}</span>' if author else ""
+
+                tag = "a" if source_url else "div"
+                href = f'href="{html_module.escape(source_url)}" target="_blank" rel="noopener"' if source_url else ""
+                link_icon = '<span class="card-link-icon">↗</span>' if source_url else ""
+
+                cards_html += f"""<{tag} class="card" {href}>
+  <div class="card-headline">{headline}</div>
+  <div class="card-summary">{summary}</div>
+  <div class="card-meta">
+    <span class="card-source">{favicon_img}{source_name}</span>
+    {author_span}
+    {link_icon}
+  </div>
+</{tag}>
+"""
+
+        sections_html += f"""<div class="section">
+  <div class="section-header">
+    <span class="section-icon">{icon}</span>
+    <span class="section-title">{title}</span>
+    <span class="section-count">{len(items)}</span>
+  </div>
+  {cards_html}
+</div>
+"""
+
+    return HTML_TEMPLATE.format(
+        date=date,
+        trend_summary=trend,
+        sections_html=sections_html,
+    )
+
+
+INDEX_TEMPLATE = """<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 简报 · 归档</title>
+<style>
+  :root {{
+    --bg: #0a0a0f; --surface: #14141f; --card: #1a1a2e;
+    --border: #2a2a45; --text: #e0e0f0; --text-secondary: #8888aa;
+    --accent-light: #a29bfe; --green: #55efc4;
+  }}
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }}
+  .container {{ max-width:600px; margin:0 auto; padding:40px 16px; }}
+  h1 {{ text-align:center; font-size:24px; margin-bottom:8px;
+       background:linear-gradient(135deg,var(--accent-light),var(--green));
+       -webkit-background-clip:text; -webkit-text-fill-color:transparent; }}
+  .subtitle {{ text-align:center; color:var(--text-secondary); font-size:13px; margin-bottom:32px; }}
+  .list a {{
+    display:block; padding:14px 18px; margin-bottom:8px;
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    color:var(--text); text-decoration:none; font-size:15px;
+    transition: all 0.2s;
+  }}
+  .list a:hover {{ border-color:var(--accent-light); transform:translateX(4px); }}
+  .list a span {{ color:var(--text-secondary); font-size:13px; float:right; }}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📡 AI 简报归档</h1>
+  <div class="subtitle">Follow Builders, Not Influencers</div>
+  <div class="list">
+    {links}
+  </div>
+</div>
+</body>
+</html>"""
+
+
+def save_html(briefing_data, html_content):
+    os.makedirs(DOCS_DIR, exist_ok=True)
+    date = briefing_data["date"]
+    filepath = os.path.join(DOCS_DIR, f"{date}.html")
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    print(f"   HTML saved: {filepath}")
+
+    # 更新 index.html（列出所有简报）
+    html_files = sorted(
+        [f for f in os.listdir(DOCS_DIR) if f.endswith(".html") and f != "index.html"],
+        reverse=True
+    )
+    links = ""
+    for fname in html_files:
+        d = fname.replace(".html", "")
+        links += f'    <a href="{fname}">AI 简报 · {d} <span>→</span></a>\n'
+
+    index_html = INDEX_TEMPLATE.format(links=links)
+    with open(os.path.join(DOCS_DIR, "index.html"), "w", encoding="utf-8") as f:
+        f.write(index_html)
+    print("   index.html updated")
+
+    return f"{PAGES_BASE_URL}/{date}.html"
+
+
+def create_notion_page(title, briefing_data):
+    """简化版 Notion 存档 — 存趋势总结 + 链接"""
+    trend = briefing_data.get("trend_summary", "")
+    page_url = f"{PAGES_BASE_URL}/{briefing_data['date']}.html"
+
+    children = [
+        {"object": "block", "type": "bookmark", "bookmark": {"url": page_url}},
+        {"object": "block", "type": "paragraph", "paragraph": {
+            "rich_text": [{"type": "text", "text": {"content": f"💡 {trend}"}}]
+        }},
+    ]
+
+    # 每个 section 的要点
+    for section in briefing_data.get("sections", []):
+        icon = section.get("icon", "")
+        stitle = section.get("title", "")
+        children.append({
+            "object": "block", "type": "heading_2",
+            "heading_2": {"rich_text": [{"type": "text", "text": {"content": f"{icon} {stitle}"}}]}
+        })
+        for item in section.get("items", [])[:10]:
+            headline = item.get("headline", "")
+            children.append({
+                "object": "block", "type": "bulleted_list_item",
+                "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": headline}}]}
+            })
 
     body = {
         "parent": {"page_id": BRIEFING_PAGE_ID},
         "icon": {"type": "emoji", "emoji": "📰"},
-        "properties": {
-            "title": {"title": [{"type": "text", "text": {"content": title}}]}
-        },
-        "children": children[:100],  # Notion 限制每次最多 100 个 block
+        "properties": {"title": {"title": [{"type": "text", "text": {"content": title}}]}},
+        "children": children[:100],
     }
 
     data = json.dumps(body).encode("utf-8")
     req = urllib.request.Request(
-        "https://api.anthropic.com/v1/pages",  # placeholder, will fix
+        "https://api.notion.com/v1/pages",
         data=data,
         headers={
             "Content-Type": "application/json",
@@ -211,26 +561,18 @@ def create_notion_page(title, content):
             "Notion-Version": "2022-06-28",
         },
     )
-    # Fix: use Notion API
-    req.full_url = "https://api.notion.com/v1/pages"
     with urllib.request.urlopen(req, timeout=30) as resp:
         result = json.loads(resp.read().decode("utf-8"))
         return result.get("url", "")
 
 
-def send_bark(title, body):
-    """发送 Bark 推送"""
-    url = BARK_URL.rstrip("/")
-    payload = json.dumps({
-        "title": title,
-        "body": body,
-        "level": "timeSensitive",
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-    )
+def send_bark(title, body, url=None):
+    bark_base = BARK_URL.rstrip("/")
+    payload = {"title": title, "body": body, "level": "timeSensitive"}
+    if url:
+        payload["url"] = url
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(bark_base, data=data, headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=10) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
@@ -238,25 +580,27 @@ def send_bark(title, body):
 def main():
     print("📡 开始生成每日 AI 简报...")
 
-    # 1. 加载 builders 列表
     builders_data = load_builders()
     print(f"   已加载 {len(builders_data['builders'])} 位 builder")
 
-    # 2. 生成简报
-    print("   正在搜索最新动态并生成简报...")
-    content = generate_briefing_content(builders_data)
-    print("   简报生成完成")
+    print("   正在搜索并生成结构化简报...")
+    briefing_data = search_and_get_json(builders_data)
+    print(f"   简报数据: {len(briefing_data.get('sections', []))} 个板块")
 
-    # 3. 存入 Notion
-    today = datetime.date.today().strftime("%Y-%m-%d")
+    print("   正在渲染 HTML...")
+    html_content = render_html(briefing_data)
+    page_url = save_html(briefing_data, html_content)
+    print(f"   页面地址: {page_url}")
+
+    today = briefing_data.get("date", datetime.date.today().strftime("%Y-%m-%d"))
     title = f"AI 简报 · {today}"
-    print(f"   正在写入 Notion: {title}")
-    notion_url = create_notion_page(title, content)
-    print(f"   Notion 页面: {notion_url}")
 
-    # 4. 推送 Bark
-    print("   正在推送 Bark 通知...")
-    send_bark("📡 AI 简报已更新", f"{title}\n打开 Notion 查看")
+    print("   正在写入 Notion...")
+    notion_url = create_notion_page(title, briefing_data)
+    print(f"   Notion: {notion_url}")
+
+    print("   正在推送 Bark...")
+    send_bark("📡 AI 简报已更新", title, url=page_url)
     print("   推送完成")
 
     print("✅ 全部完成")
