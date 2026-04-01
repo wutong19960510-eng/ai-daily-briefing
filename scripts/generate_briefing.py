@@ -3,6 +3,7 @@
 
 import os
 import json
+import re
 import datetime
 import urllib.request
 import html as html_module
@@ -106,12 +107,14 @@ def search_and_get_json(builders_data):
     {{
       "type": "story",
       "label": "短标签如'模型发布'或'行业观点'",
-      "text": "200-350字的对话体叙述。像跟朋友聊天一样讲清楚这件事。第一次提到的人要介绍身份。段落间用 \\n\\n 分隔。"
+      "headline": "一句话主标题，15字以内，抓住核心",
+      "text": "200-350字的对话体叙述。像跟朋友聊天一样讲清楚这件事。第一次提到的人要介绍身份。段落间用 \\n\\n 分隔。用 **双星号** 标记关键信息（人名、数字、核心概念），帮读者快速抓重点。"
     }},
     {{
       "type": "story",
       "label": "标签",
-      "text": "下一个信息点。开头要有过渡句，跟上一屏有呼应。"
+      "headline": "一句话主标题",
+      "text": "下一个信息点。开头要有过渡句，跟上一屏有呼应。同样用 **双星号** 标记重点。"
     }},
     {{
       "type": "term",
@@ -240,8 +243,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     font-weight: 600;
     padding: 4px 12px;
     border-radius: 4px;
-    margin-bottom: 18px;
+    margin-bottom: 12px;
     color: #fff;
+    letter-spacing: 0.5px;
+  }}
+  .story-headline {{
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin-bottom: 16px;
   }}
   .label-模型发布 {{ background: #e74c3c; }}
   .label-行业观点 {{ background: #3498db; }}
@@ -262,6 +273,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   }}
   .story-text p:last-child {{
     margin-bottom: 0;
+  }}
+  .story-text strong {{
+    color: #1a1a1a;
+    font-weight: 600;
+    background: linear-gradient(to top, rgba(91,94,166,0.12) 40%, transparent 40%);
+    padding: 0 2px;
+  }}
+  .term-explain strong {{
+    font-weight: 600;
+    color: #1a1a1a;
   }}
 
   /* Term */
@@ -340,6 +361,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   @media (max-width: 480px) {{
     .screen {{ padding: 32px 20px; }}
     .intro-text {{ font-size: 20px; }}
+    .story-headline {{ font-size: 20px; }}
     .story-text {{ font-size: 16px; line-height: 1.95; }}
     .term-word {{ font-size: 22px; }}
     .outro-text {{ font-size: 18px; }}
@@ -375,6 +397,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 LABEL_CLASSES = {"模型发布", "行业观点", "产品更新", "融资动态", "技术博客", "播客精华", "重要动态"}
 
 
+def _bold(escaped_text):
+    """Convert **text** markers to <strong> tags. Input is already HTML-escaped."""
+    return re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', escaped_text)
+
+
 def render_html(data):
     date = html_module.escape(data.get("date", ""))
     screens = data.get("screens", [])
@@ -398,22 +425,24 @@ def render_html(data):
 
         elif stype == "story":
             label = screen.get("label", "")
+            headline = screen.get("headline", "")
             label_class = f"label-{label}" if label in LABEL_CLASSES else "label-default"
             raw_text = screen.get("text", "")
             paragraphs = [p.strip() for p in raw_text.split("\n\n") if p.strip()]
             if not paragraphs:
                 paragraphs = [p.strip() for p in raw_text.split("\n") if p.strip()]
-            body = "".join(f"<p>{html_module.escape(p)}</p>" for p in paragraphs)
+            body = "".join(f"<p>{_bold(html_module.escape(p))}</p>" for p in paragraphs)
+            headline_html = f'\n    <div class="story-headline">{html_module.escape(headline)}</div>' if headline else ""
             inner = f"""<div class="screen screen-story">
   <div class="screen-inner">
-    <div class="story-label {html_module.escape(label_class)}">{html_module.escape(label)}</div>
+    <div class="story-label {html_module.escape(label_class)}">{html_module.escape(label)}</div>{headline_html}
     <div class="story-text">{body}</div>
   </div>
 </div>"""
 
         elif stype == "term":
             word = html_module.escape(screen.get("word", ""))
-            explain = html_module.escape(screen.get("explain", ""))
+            explain = _bold(html_module.escape(screen.get("explain", "")))
             inner = f"""<div class="screen screen-term">
   <div class="screen-inner">
     <div class="term-badge">💡 术语卡片</div>
