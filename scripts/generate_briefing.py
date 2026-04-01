@@ -73,19 +73,37 @@ def search_and_get_json(builders_data):
     builder_names = ", ".join(b["name"] for b in builders_data["builders"])
     podcast_names = ", ".join(p["name"] for p in builders_data["podcasts"])
 
-    prompt = f"""今天是 {today}。你是 AI 行业简报助手。
+    # ===== Step 1: 搜索收集原始信息（自由格式） =====
+    search_prompt = f"""今天是 {today}。搜索以下 AI 领域关键人物和机构的最新动态（最近几天内的都可以）：
 
-搜索以下 AI 领域关键人物最近 24 小时的重要动态：
-{builder_names}
+人物：{builder_names}
+播客：{podcast_names}
+博客：Anthropic、OpenAI、Google DeepMind 官方博客
 
-同时关注播客新内容：{podcast_names}
-同时关注 Anthropic、OpenAI、Google DeepMind 官方博客。
+请列出你搜索到的所有重要信息，包括：
+- 谁说了什么/发布了什么
+- 原始链接
+- 来源（X/Twitter、博客、播客等）
 
-请输出 **严格 JSON**（不要 markdown 代码块，不要额外文字），格式如下：
+用中文总结每条信息。尽量多搜索，覆盖面要广。"""
+
+    print("   Step 1: 搜索收集信息...")
+    raw_info = call_claude_with_search(search_prompt)
+    print(f"   搜索结果: {len(raw_info)} chars")
+
+    # ===== Step 2: 结构化为 JSON（无搜索，纯格式化） =====
+    format_prompt = f"""将以下 AI 行业信息整理为严格 JSON 格式。
+
+原始信息：
+---
+{raw_info}
+---
+
+输出严格 JSON（不要 markdown 代码块，不要 ```，不要任何额外文字，直接输出 JSON）：
 
 {{
   "date": "{today}",
-  "trend_summary": "一句话总结今日 AI 趋势（中文）",
+  "trend_summary": "一句话总结今日 AI 趋势（中文，20字以内）",
   "sections": [
     {{
       "id": "breaking",
@@ -93,9 +111,9 @@ def search_and_get_json(builders_data):
       "icon": "🔥",
       "items": [
         {{
-          "headline": "标题（中文）",
+          "headline": "标题（中文，15字以内）",
           "summary": "2-3句摘要（中文）",
-          "source_name": "来源名称（如 X/Twitter, Anthropic Blog）",
+          "source_name": "来源名称",
           "source_url": "https://原始链接",
           "author": "作者名"
         }}
@@ -105,40 +123,47 @@ def search_and_get_json(builders_data):
       "id": "builders",
       "title": "Builder 动态",
       "icon": "👤",
-      "items": [...]
+      "items": [同上格式]
     }},
     {{
       "id": "media",
       "title": "播客与博客",
       "icon": "🎙️",
-      "items": [...]
+      "items": [同上格式]
     }}
   ]
 }}
 
 规则：
-- 只收录有真实搜索结果支撑的内容，不要编造
-- source_url 必须是真实可访问的链接
-- 没有动态的人不要硬凑，跳过
-- 每个 section 的 items 可以为空数组
-- headline 和 summary 用中文"""
+- breaking 放最重要的 1-3 条大新闻
+- builders 放各人的具体动态
+- media 放播客和博客更新
+- source_url 必须用原始信息中的真实链接
+- 没有内容的 section items 设为空数组 []
+- 只输出 JSON，不要任何其他文字"""
 
-    raw = call_claude_with_search(prompt)
+    print("   Step 2: 格式化为 JSON...")
+    raw_json = call_claude([{"role": "user", "content": format_prompt}])
 
-    # 清理可能的 markdown 包裹
-    text = raw.strip()
+    # 从 API 响应中提取文本
+    text_parts = [b["text"] for b in raw_json.get("content", []) if b.get("type") == "text"]
+    text = "\n".join(text_parts).strip()
+
+    # 清理 markdown 包裹
     if text.startswith("```"):
-        text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+        first_nl = text.find("\n")
+        text = text[first_nl + 1:] if first_nl != -1 else text[3:]
     if text.endswith("```"):
         text = text[:-3]
     text = text.strip()
+
+    print(f"   JSON output: {len(text)} chars")
 
     try:
         return json.loads(text)
     except json.JSONDecodeError as e:
         print(f"   [JSON parse error: {e}]")
-        print(f"   [Raw output: {text[:500]}]")
-        # 回退：用纯文本包装
+        print(f"   [Raw: {text[:500]}]")
         return {
             "date": today,
             "trend_summary": "简报生成异常，请查看原始内容",
