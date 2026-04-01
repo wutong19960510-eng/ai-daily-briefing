@@ -33,3 +33,12 @@ jobs:
           git add docs/
           git diff --staged --quiet || git commit -m "📡 AI 简报 · $(date +%Y-%m-%d)"
           git push
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          BARK_URL: ${{ secrets.BARK_URL }}
+        run: |
+          curl -s -X POST "$BARK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{"title":"❌ 简报生成失败","body":"GitHub Actions workflow failed, check logs","level":"timeSensitive"}'

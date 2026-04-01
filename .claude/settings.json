@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/hooks/post_edit_check.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

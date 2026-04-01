@@ -1,0 +1,37 @@
+#!/bin/bash
+# Pre-commit hook: 提交前自动验证，不过不让提交
+echo "🔍 提交前检查..."
+
+failed=0
+
+# 检查所有暂存的 .py 文件语法
+py_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$')
+if [ -n "$py_files" ]; then
+    for f in $py_files; do
+        if ! python3 -m py_compile "$f" 2>&1; then
+            echo "❌ Python 语法错误: $f"
+            failed=1
+        fi
+    done
+    [ $failed -eq 0 ] && echo "✅ Python 语法正确"
+fi
+
+# 检查所有暂存的配置 JSON 格式
+json_files=$(git diff --cached --name-only --diff-filter=ACM | grep 'configs/.*\.json$')
+if [ -n "$json_files" ]; then
+    for f in $json_files; do
+        if ! python3 -c "import json,sys; json.load(open('$f'))" 2>&1; then
+            echo "❌ JSON 格式错误: $f"
+            failed=1
+        fi
+    done
+    [ $failed -eq 0 ] && echo "✅ JSON 配置正确"
+fi
+
+if [ $failed -ne 0 ]; then
+    echo ""
+    echo "🚫 提交被拦截，请修复上面的错误"
+    exit 1
+fi
+
+echo "✅ 检查通过，允许提交"
