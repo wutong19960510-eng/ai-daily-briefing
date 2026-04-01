@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""每日 AI 简报 — 故事卷轴 + 对话体"""
+"""每日简报生成器 — 主题可配置，故事卷轴 + 对话体"""
 
 import os
+import sys
 import json
 import re
 import datetime
@@ -9,16 +10,19 @@ import urllib.request
 import html as html_module
 
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
-BARK_URL = os.environ["BARK_URL"]
-PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "https://wutong19960510-eng.github.io/ai-daily-briefing")
+BARK_URL = os.environ.get("BARK_URL", "")
+PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "")
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 DOCS_DIR = os.path.join(REPO_ROOT, "docs")
 
 
-def load_builders():
-    with open(os.path.join(SCRIPT_DIR, "builders.json"), "r") as f:
+def load_config(config_path=None):
+    if not config_path:
+        config_path = os.environ.get("BRIEFING_CONFIG",
+                                     os.path.join(SCRIPT_DIR, "configs", "ai.json"))
+    with open(config_path, "r") as f:
         return json.load(f)
 
 
@@ -61,17 +65,20 @@ def call_claude_with_search(prompt):
             return "\n".join(b["text"] for b in content_blocks if b.get("type") == "text")
 
 
-def search_and_get_json(builders_data):
+def search_and_get_json(config):
     today = datetime.date.today().strftime("%Y-%m-%d")
-    builder_names = ", ".join(f'{b["name"]} ({b["role"]})' for b in builders_data["builders"])
-    podcast_names = ", ".join(p["name"] for p in builders_data["podcasts"])
+    title = config.get("title", "每日简报")
+    search_scope = config.get("search_scope", "相关领域")
+    builder_names = ", ".join(f'{b["name"]} ({b["role"]})' for b in config.get("builders", []))
+    podcast_names = ", ".join(p["name"] for p in config.get("podcasts", []))
+    blog_names = ", ".join(b["name"] for b in config.get("blogs", []))
 
     # Step 1: 搜索
-    search_prompt = f"""今天是 {today}。搜索以下 AI 领域关键人物和机构的最新动态（最近一周内）：
+    search_prompt = f"""今天是 {today}。搜索以下{search_scope}的最新动态（最近一周内）：
 
 人物：{builder_names}
 播客：{podcast_names}
-博客：Anthropic、OpenAI、Google DeepMind
+博客：{blog_names}
 
 对每条信息尽量详细记录：谁、说了/做了什么、技术细节、背景。中文记录。"""
 
@@ -187,7 +194,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>AI 简报 · {date}</title>
+<title>{title} · {date}</title>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   html {{ scroll-snap-type: y mandatory; scroll-behavior: smooth; }}
@@ -419,7 +426,9 @@ def _bold(escaped_text):
     return re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', escaped_text)
 
 
-def render_html(data):
+def render_html(data, config=None):
+    config = config or {}
+    title = html_module.escape(config.get("title", "每日简报"))
     date = html_module.escape(data.get("date", ""))
     screens = data.get("screens", [])
 
@@ -435,7 +444,7 @@ def render_html(data):
             text = html_module.escape(screen.get("text", ""))
             inner = f"""<div class="screen screen-intro">
   <div class="screen-inner">
-    <div class="intro-date">AI 简报 · {date}</div>
+    <div class="intro-date">{title} · {date}</div>
     <div class="intro-text">{text}</div>
   </div>
   <div class="intro-hint">↓ 向下滑动</div>
@@ -497,7 +506,7 @@ def render_html(data):
 
         screens_html += inner + "\n"
 
-    return HTML_TEMPLATE.format(date=date, dots_html=dots_html, screens_html=screens_html)
+    return HTML_TEMPLATE.format(title=title, date=date, dots_html=dots_html, screens_html=screens_html)
 
 
 INDEX_TEMPLATE = """<!DOCTYPE html>
@@ -524,15 +533,16 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="c">
-  <h1>AI 简报</h1>
-  <div class="sub">Follow Builders, Not Influencers</div>
+  <h1>{index_title}</h1>
+  <div class="sub">{index_subtitle}</div>
   {links}
 </div>
 </body>
 </html>"""
 
 
-def save_html(data, html_content):
+def save_html(data, html_content, config=None):
+    config = config or {}
     os.makedirs(DOCS_DIR, exist_ok=True)
     date = data["date"]
     with open(os.path.join(DOCS_DIR, f"{date}.html"), "w", encoding="utf-8") as f:
@@ -543,10 +553,14 @@ def save_html(data, html_content):
         reverse=True
     )
     links = "".join(f'<a href="{fn}">{fn.replace(".html","")} <span>→</span></a>\n' for fn in html_files)
+    index_title = html_module.escape(config.get("title", "每日简报"))
+    index_subtitle = html_module.escape(config.get("subtitle", ""))
     with open(os.path.join(DOCS_DIR, "index.html"), "w", encoding="utf-8") as f:
-        f.write(INDEX_TEMPLATE.format(links=links))
+        f.write(INDEX_TEMPLATE.format(links=links, index_title=index_title, index_subtitle=index_subtitle))
 
-    return f"{PAGES_BASE_URL}/{date}.html"
+    if PAGES_BASE_URL:
+        return f"{PAGES_BASE_URL}/{date}.html"
+    return os.path.join(DOCS_DIR, f"{date}.html")
 
 
 def send_bark(title, body, url=None):
@@ -560,18 +574,23 @@ def send_bark(title, body, url=None):
 
 
 def main():
-    print("📡 AI 简报...")
-    builders_data = load_builders()
-    briefing = search_and_get_json(builders_data)
+    config_path = sys.argv[1] if len(sys.argv) > 1 else None
+    config = load_config(config_path)
+    title = config.get("title", "每日简报")
+    print(f"📡 {title}...")
+
+    briefing = search_and_get_json(config)
     n = len(briefing.get("screens", []))
     print(f"   {n} screens")
 
-    html = render_html(briefing)
-    url = save_html(briefing, html)
+    html = render_html(briefing, config)
+    url = save_html(briefing, html, config)
     print(f"   {url}")
 
     today = briefing.get("date", datetime.date.today().strftime("%Y-%m-%d"))
-    send_bark("📡 AI 简报已更新", f"{today}", url=url)
+    bark_title = config.get("bark_title", f"📡 {title}已更新")
+    if BARK_URL:
+        send_bark(bark_title, f"{today}", url=url)
     print("✅ done")
 
 

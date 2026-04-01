@@ -23,6 +23,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           BARK_URL: ${{ secrets.BARK_URL }}
           PAGES_BASE_URL: https://wutong19960510-eng.github.io/ai-daily-briefing
+          BRIEFING_CONFIG: scripts/configs/ai.json
         run: python scripts/generate_briefing.py
 
       - name: Commit and push
