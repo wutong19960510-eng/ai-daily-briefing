@@ -79,6 +79,9 @@ def search_and_get_json(builders_data):
     raw_info = call_claude_with_search(search_prompt)
     print(f"   原始: {len(raw_info)} chars")
 
+    # Build handle reference
+    handle_ref = "\n".join(f"- {b['name']}: {b['handle']}" for b in builders_data["builders"])
+
     # Step 2: 生成故事卷轴 JSON
     format_prompt = f"""你是一个给外行朋友讲 AI 新闻的人。基于以下原始信息，生成一份「故事卷轴」简报。
 
@@ -87,12 +90,15 @@ def search_and_get_json(builders_data):
 {raw_info}
 ---
 
+人物 Twitter 账号参考（用于 card 的 handle 字段）：
+{handle_ref}
+
 要求：
 1. 用对话口语写，像在跟一个完全不懂 AI 的朋友聊天
 2. 精选 3-5 条最值得讲的内容（不要贪多）
 3. 内容之间要有逻辑连接和过渡（不是独立的几块）
 4. 提到的人物/公司/术语，第一次出现时自然地解释（融入对话，不要单独列）
-5. 如果有某个术语特别重要且解释起来需要篇幅，单独做一个术语卡片屏
+5. 在 story 之间穿插 2-3 张卡片（card），介绍出现的关键人物、公司或术语
 6. 最后一屏做一个收尾总结
 
 直接输出 JSON（不要 ```）：
@@ -108,18 +114,34 @@ def search_and_get_json(builders_data):
       "type": "story",
       "label": "短标签如'模型发布'或'行业观点'",
       "headline": "一句话主标题，15字以内，抓住核心",
-      "text": "200-350字的对话体叙述。像跟朋友聊天一样讲清楚这件事。第一次提到的人要介绍身份。段落间用 \\n\\n 分隔。用 **双星号** 标记关键信息（人名、数字、核心概念），帮读者快速抓重点。"
+      "text": "200-350字的对话体叙述。段落间用 \\n\\n 分隔。用 **双星号** 标记关键信息。"
+    }},
+    {{
+      "type": "card",
+      "category": "人物",
+      "name": "人物全名",
+      "handle": "@twitter_handle（从上面的参考列表里找）",
+      "text": "3-5句话介绍这个人是谁、做过什么、为什么重要。用 **双星号** 标记重点。"
     }},
     {{
       "type": "story",
       "label": "标签",
       "headline": "一句话主标题",
-      "text": "下一个信息点。开头要有过渡句，跟上一屏有呼应。同样用 **双星号** 标记重点。"
+      "text": "下一个信息点。开头要有过渡句。用 **双星号** 标记重点。"
     }},
     {{
-      "type": "term",
-      "word": "术语名",
-      "explain": "用大白话解释这个术语，可以用比喻，3-5句话"
+      "type": "card",
+      "category": "公司",
+      "name": "公司名",
+      "handle": "company.com（公司官网域名）",
+      "text": "3-5句话介绍这家公司做什么、在行业中的地位。"
+    }},
+    {{
+      "type": "card",
+      "category": "术语",
+      "name": "术语名",
+      "handle": "",
+      "text": "用大白话解释这个术语，可以用比喻，3-5句话"
     }},
     {{
       "type": "outro",
@@ -129,11 +151,14 @@ def search_and_get_json(builders_data):
 }}
 
 规则：
-- screens 数量 6-9 个（1 intro + 3-5 story + 0-2 term + 1 outro）
-- 全部中文，不要出现英文
+- screens 数量 7-11 个（1 intro + 3-5 story + 2-3 card + 1 outro）
+- card 穿插在 story 之间，紧跟相关 story 后面
+- card 至少 2 张，类型可以是人物、公司或术语的组合
+- 人物 card 的 handle 必须是 @xxx 格式的 Twitter 账号
+- 公司 card 的 handle 必须是 xxx.com 格式的官网域名
+- 全部中文，不要出现英文（handle 字段除外）
 - 对话感要强，可以用"你知道吗""说白了""有意思的是"这类口语
-- 不要用"大家好""今天的简报"这种播报腔
-- term 类型的屏只在术语确实需要额外解释时才加，不要每期都硬加"""
+- 不要用"大家好""今天的简报"这种播报腔"""
 
     print("   Step 2: 故事卷轴...")
     raw_json = call_claude([{"role": "user", "content": format_prompt}])
@@ -239,10 +264,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   }}
   .story-label {{
     display: inline-block;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 4px;
+    padding: 5px 14px;
+    border-radius: 6px;
     margin-bottom: 12px;
     color: #fff;
     letter-spacing: 0.5px;
@@ -251,17 +276,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     font-size: 22px;
     font-weight: 700;
     line-height: 1.5;
-    color: #1a1a1a;
     margin-bottom: 16px;
   }}
-  .label-模型发布 {{ background: #e74c3c; }}
-  .label-行业观点 {{ background: #3498db; }}
-  .label-产品更新 {{ background: #2ecc71; }}
-  .label-融资动态 {{ background: #f39c12; }}
-  .label-技术博客 {{ background: #9b59b6; }}
-  .label-播客精华 {{ background: #1abc9c; }}
-  .label-重要动态 {{ background: #e67e22; }}
-  .label-default {{ background: #7f8c8d; }}
 
   .story-text {{
     font-size: 17px;
@@ -280,32 +296,45 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     background: linear-gradient(to top, rgba(91,94,166,0.12) 40%, transparent 40%);
     padding: 0 2px;
   }}
-  .term-explain strong {{
-    font-weight: 600;
-    color: #1a1a1a;
-  }}
 
-  /* Term */
-  .screen-term {{
-    background: #f0f0f5;
+  /* Card (人物/公司/术语) */
+  .screen-card {{
+    background: #f5f5fa;
   }}
-  .term-badge {{
+  .card-badge {{
     font-size: 12px;
-    color: #5b5ea6;
     font-weight: 600;
     letter-spacing: 1px;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
   }}
-  .term-word {{
-    font-size: 26px;
-    font-weight: 700;
-    color: #1a1a1a;
+  .card-avatar {{
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 16px;
+    background: #e8e8ed;
+  }}
+  .card-logo {{
+    height: 40px;
+    max-width: 160px;
+    object-fit: contain;
     margin-bottom: 16px;
   }}
-  .term-explain {{
+  .card-name {{
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 14px;
+  }}
+  .card-text {{
     font-size: 17px;
     line-height: 2;
     color: #444;
+  }}
+  .card-text strong {{
+    font-weight: 600;
+    color: #1a1a1a;
   }}
 
   /* Outro */
@@ -363,7 +392,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .intro-text {{ font-size: 20px; }}
     .story-headline {{ font-size: 20px; }}
     .story-text {{ font-size: 16px; line-height: 1.95; }}
-    .term-word {{ font-size: 22px; }}
+    .card-name {{ font-size: 22px; }}
+    .card-avatar {{ width: 64px; height: 64px; }}
     .outro-text {{ font-size: 18px; }}
   }}
 </style>
@@ -394,7 +424,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </html>"""
 
 
-LABEL_CLASSES = {"模型发布", "行业观点", "产品更新", "融资动态", "技术博客", "播客精华", "重要动态"}
+# Color palette for stories — cycles through (label_bg, headline_color)
+STORY_COLORS = [
+    ("#e74c3c", "#c0392b"),  # red
+    ("#3498db", "#2471a3"),  # blue
+    ("#9b59b6", "#7d3c98"),  # purple
+    ("#e67e22", "#ca6f1e"),  # orange
+    ("#1abc9c", "#148f77"),  # teal
+]
+
+CARD_BADGES = {
+    "人物": ("👤", "#e74c3c"),
+    "公司": ("🏢", "#3498db"),
+    "术语": ("💡", "#5b5ea6"),
+}
 
 
 def _bold(escaped_text):
@@ -409,6 +452,7 @@ def render_html(data):
     dots_html = "\n  ".join(f'<div class="dot{"  active" if i == 0 else ""}"></div>' for i in range(len(screens)))
 
     screens_html = ""
+    story_idx = 0
     for screen in screens:
         stype = screen.get("type", "story")
         inner = ""
@@ -426,28 +470,52 @@ def render_html(data):
         elif stype == "story":
             label = screen.get("label", "")
             headline = screen.get("headline", "")
-            label_class = f"label-{label}" if label in LABEL_CLASSES else "label-default"
+            label_bg, headline_color = STORY_COLORS[story_idx % len(STORY_COLORS)]
+            story_idx += 1
             raw_text = screen.get("text", "")
             paragraphs = [p.strip() for p in raw_text.split("\n\n") if p.strip()]
             if not paragraphs:
                 paragraphs = [p.strip() for p in raw_text.split("\n") if p.strip()]
             body = "".join(f"<p>{_bold(html_module.escape(p))}</p>" for p in paragraphs)
-            headline_html = f'\n    <div class="story-headline">{html_module.escape(headline)}</div>' if headline else ""
+            headline_html = f'\n    <div class="story-headline" style="color:{headline_color}">{html_module.escape(headline)}</div>' if headline else ""
             inner = f"""<div class="screen screen-story">
   <div class="screen-inner">
-    <div class="story-label {html_module.escape(label_class)}">{html_module.escape(label)}</div>{headline_html}
+    <div class="story-label" style="background:{label_bg}">{html_module.escape(label)}</div>{headline_html}
     <div class="story-text">{body}</div>
   </div>
 </div>"""
 
+        elif stype == "card":
+            category = screen.get("category", "术语")
+            name = html_module.escape(screen.get("name", ""))
+            handle = screen.get("handle", "")
+            text = _bold(html_module.escape(screen.get("text", "")))
+            emoji, badge_color = CARD_BADGES.get(category, ("💡", "#5b5ea6"))
+            # Build image tag
+            img_html = ""
+            if category == "人物" and handle.startswith("@"):
+                h = html_module.escape(handle[1:])
+                img_html = f'<img class="card-avatar" src="https://unavatar.io/x/{h}" alt="" onerror="this.style.display=\'none\'">\n    '
+            elif category == "公司" and "." in handle:
+                d = html_module.escape(handle)
+                img_html = f'<img class="card-logo" src="https://logo.clearbit.com/{d}" alt="" onerror="this.style.display=\'none\'">\n    '
+            inner = f"""<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:{badge_color}">{emoji} {html_module.escape(category)}卡片</div>
+    {img_html}<div class="card-name">{name}</div>
+    <div class="card-text">{text}</div>
+  </div>
+</div>"""
+
         elif stype == "term":
+            # Backward compat: treat as card with 术语 category
             word = html_module.escape(screen.get("word", ""))
             explain = _bold(html_module.escape(screen.get("explain", "")))
-            inner = f"""<div class="screen screen-term">
+            inner = f"""<div class="screen screen-card">
   <div class="screen-inner">
-    <div class="term-badge">💡 术语卡片</div>
-    <div class="term-word">{word}</div>
-    <div class="term-explain">{explain}</div>
+    <div class="card-badge" style="color:#5b5ea6">💡 术语卡片</div>
+    <div class="card-name">{word}</div>
+    <div class="card-text">{explain}</div>
   </div>
 </div>"""
 
