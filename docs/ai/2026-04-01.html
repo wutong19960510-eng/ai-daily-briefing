@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AI 简报 · 2026-04-01</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 24px;
+    position: relative;
+  }
+  .screen-inner {
+    max-width: 560px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Intro */
+  .screen-intro {
+    background: #fafafa;
+  }
+  .intro-date {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #aaa;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .intro-text {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.7;
+    color: #1a1a1a;
+  }
+  .intro-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #ccc;
+    animation: bounce 2s ease infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+  }
+
+  /* Story */
+  .screen-story {
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .story-label {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .story-headline {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .story-text {
+    font-size: 17px;
+    line-height: 2;
+    color: #2a2a2a;
+  }
+  .story-text p {
+    margin-bottom: 14px;
+  }
+  .story-text p:last-child {
+    margin-bottom: 0;
+  }
+  .story-text strong {
+    color: #1a1a1a;
+    font-weight: 600;
+    background: linear-gradient(to top, rgba(91,94,166,0.12) 40%, transparent 40%);
+    padding: 0 2px;
+  }
+
+  /* Card (人物/公司/术语) */
+  .screen-card {
+    background: #f5f5fa;
+  }
+  .card-badge {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .card-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 14px;
+  }
+  .card-text {
+    font-size: 17px;
+    line-height: 2;
+    color: #444;
+  }
+  .card-text strong {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  /* Outro */
+  .screen-outro {
+    background: #fafafa;
+  }
+  .outro-text {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: #1a1a1a;
+  }
+  .outro-bye {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #aaa;
+  }
+  .outro-nav {
+    margin-top: 28px;
+  }
+  .outro-nav a {
+    font-size: 13px;
+    color: #5b5ea6;
+    text-decoration: none;
+    padding: 8px 18px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+
+  /* Progress dots */
+  .progress {
+    position: fixed;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s;
+  }
+  .dot.active {
+    background: #5b5ea6;
+    transform: scale(1.5);
+  }
+
+  @media (max-width: 480px) {
+    .screen { padding: 32px 20px; }
+    .intro-text { font-size: 20px; }
+    .story-headline { font-size: 20px; }
+    .story-text { font-size: 16px; line-height: 1.95; }
+    .card-name { font-size: 22px; }
+    .outro-text { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress">
+  <div class="dot  active"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+</div>
+
+<div class="screen screen-intro">
+  <div class="screen-inner">
+    <div class="intro-date">AI 简报 · 2026-04-01</div>
+    <div class="intro-text">你知道吗，最近AI圈发生了件特别有意思的事——不是又出了什么新模型，而是人们开始意识到，以后写代码这事儿可能真的要失业了。咱们今天就聊聊这背后到底发生了什么。</div>
+  </div>
+  <div class="intro-hint">↓ 向下滑动</div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#e74c3c">代理时代来临</div>
+    <div class="story-headline" style="color:#c0392b">AI开始自己写代码，人类只管指挥</div>
+    <div class="story-text"><p>你有没有想过，AI已经进化到可以自己写代码这一步了？前特斯拉AI负责人卡帕西最近展示了一个叫&quot;Dobby&quot;的AI代理，特别厉害的地方是，<strong>它能自动扫描你家的网络、找到各种设备、然后反向破解那些没有文档的接口，直接控制你的灯和音响</strong>。</p><p>但更关键的是他说的一句话：<strong>在2026年，我们已经进入了「代理工程时代」</strong>。什么意思呢？就是以后人类不再是坐下来一行行敲代码，而是像指挥一样，告诉AI你要干什么，它自己去琢磨怎么做。你的技术能力还有用，但用的方式完全变了——从「我来做」变成了「我来指挥」。</p><p>他还给出了个实际例子：自己的一个自动研究项目，用一个GPU、两天时间，<strong>AI代理自动跑了700个实验，还找到了20个优化方案</strong>。这不是人工智能在帮忙，这是人工智能在替你工作。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <div class="card-name">安德烈·卡帕西</div>
+    <div class="card-text"><strong>曾是特斯拉AI团队的负责人</strong>，现在专注AI教育和自动化研究。他最知名的是能把复杂的AI概念讲得特别清楚，还开源了很多教学代码。最近他的动作表明：<strong>代理AI已经从实验室走进了现实应用</strong>，这个人基本上代表了AI发展最前沿的思路。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#3498db">能源饥饿症</div>
+    <div class="story-headline" style="color:#2471a3">OpenAI为了喂AI砸巨资建数据中心</div>
+    <div class="story-text"><p>说到AI自动写代码，你可能要问一个现实问题：这么多AI跑来跑去，谁来给它们供电？</p><p>OpenAI的CEO山姆·阿尔特曼最近就在聊这事。他从一家叫Helion的能源初创公司的董事长位置上退下来，原因是<strong>OpenAI和这家公司在谈一笔能源合作</strong>——简单说就是Helion未来要给OpenAI供电，到2035年可能要供应50吉瓦的电力。这个数字有多大呢？现在美国一个中等城市可能也就这个电力水平。</p><p>阿尔特曼还说得很直白：<strong>OpenAI要在全球建一堆吉瓦级的数据中心园区，最终目的是让AI便宜到几乎免费</strong>。他的原话是&quot;我们想用智能淹没世界&quot;。当然，他也承认一个现实问题——<strong>人工智能在替代工作，很多人对未来的工作前景感到焦虑</strong>。</p><p>有个数字特别能说明OpenAI现在有多赚钱：<strong>年收入已经超过250亿美元了</strong>，公司正在筹备上市，可能最快今年下半年就会公开募股。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#3498db">🏢 公司卡片</div>
+    <div class="card-name">OpenAI</div>
+    <div class="card-text">这是目前最火的AI公司，旗下有著名的ChatGPT。<strong>目前已经成长成一家年收入250多亿的巨头，即将上市</strong>。他们的目标是让AI技术变得极其便宜，从而广泛应用到各个领域。可以说，他们的动作基本代表了整个AI产业的发展方向。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#9b59b6">AI模型的&quot;教养&quot;</div>
+    <div class="story-headline" style="color:#7d3c98">给AI模型定规则，现在成了一门大学问</div>
+    <div class="story-text"><p>现在有个有趣的新工作岗位出现了——<strong>教AI怎么做一个「好AI」</strong>。听起来有点奇怪，但Anthropic公司的研究员阿曼达·阿斯凯尔就是干这事的。</p><p>她的工作简单说，就是<strong>给Claude（一个AI模型）制定宪法——一份规则文件，告诉它什么能做、什么不能做，以及遇到两难时应该怎么选择</strong>。今年1月，她发布了最新版的Claude宪法，这份文件针对高级AI模型可能出现的各种风险做了详细的约束。</p><p>更有意思的是，她不是靠传统的人工审核来做这事，而是<strong>用生成合成数据和强化学习的方式，让模型自己理解和掌握这些规则</strong>。简单比喻的话，就像是在教一个特别聪明的学生学会做人的道理——不是靠惩罚，而是靠引导和实践。</p><p>AnthropiC还宣布了一个新的合作网络，<strong>投入至少1亿美元来帮助大公司用上Claude这个AI</strong>。同时Claude还新增了计算机操作能力，现在它可以<strong>自己打开文件、点击鼠标、运行工具，就像一个远程员工</strong>。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#3498db">🏢 公司卡片</div>
+    <div class="card-name">Anthropic</div>
+    <div class="card-text"><strong>OpenAI的主要竞争对手，自己开发了Claude AI模型</strong>。这家公司特别注重AI的安全性和可靠性，花了很多精力在怎么让AI更「守规矩」上面。最近他们在给Claude添加更多实际操作能力，有点像在培养一个更能干的数字助手。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#e67e22">行业冷静时刻</div>
+    <div class="story-headline" style="color:#ca6f1e">连OpenAI都关闭了自己的视频生成产品</div>
+    <div class="story-text"><p>不过，不是所有AI产品都一帆风顺。OpenAI最近干了个出人意料的事——<strong>关闭了Sora，自己开发的AI视频生成工具</strong>。这个产品听起来特别酷，但为什么会被关掉呢？</p><p>原因很现实：<strong>用户太少了，成本又特别高</strong>。这个产品上线后用户从100万直接跌到50万以下，运营成本却没法覆盖。OpenAI CEO阿尔特曼虽然说得很坦白——这是个&quot;艰难但必要的决定&quot;——但这也说明了一个问题：<strong>不是所有AI产品都能成功，市场和商业现实还是很残酷的</strong>。</p><p>目前主流的AI产品是什么呢？差不多是OpenAI的GPT-5.4、Anthropic的Claude、Google的Gemini这样的模型。说白了，<strong>大语言模型才是真正有生命力的方向</strong>。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#5b5ea6">💡 术语卡片</div>
+    <div class="card-name">强化学习训练</div>
+    <div class="card-text">这是最近AI训练方法的一个重大转变。以前是一步步教AI学习知识，现在更多是<strong>给AI设定目标和奖励规则，让它自己通过尝试-失败-改进的过程来达到目标</strong>。就像教一条狗做动作，靠零食奖励——AI靠<strong>&quot;奖励信号&quot;</strong>来自我完善。这个方法威力特别大，现在成了训练高级AI的主流方式。</div>
+  </div>
+</div>
+<div class="screen screen-outro">
+  <div class="screen-inner">
+    <div class="outro-text">所以你现在明白了吧——AI不仅在变聪明，还在学会自己工作、自己写代码、自己改进。接下来的世界会怎样？唯一确定的是：这玩意儿已经不是科幻了，就在眼前。</div>
+    <div class="outro-bye">明天见 👋</div>
+    <div class="outro-nav"><a href="index.html">📚 历史简报</a></div>
+  </div>
+</div>
+
+
+<script>
+  const screens = document.querySelectorAll('.screen');
+  const dots = document.querySelectorAll('.dot');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = [...screens].indexOf(entry.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.5 });
+  screens.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
