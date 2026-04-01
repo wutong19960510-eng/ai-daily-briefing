@@ -2,13 +2,11 @@ name: Daily AI Briefing
 
 on:
   schedule:
-    # 每天中午 12:00 北京时间 = UTC 4:00
-    - cron: '0 4 * * *'
+    - cron: '0 4 * * *'  # 北京时间 12:00
   workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
 
 jobs:
   generate:
@@ -23,13 +21,11 @@ jobs:
       - name: Generate briefing
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           BARK_URL: ${{ secrets.BARK_URL }}
-          NOTION_BRIEFING_PAGE_ID: ${{ secrets.NOTION_BRIEFING_PAGE_ID }}
           PAGES_BASE_URL: https://wutong19960510-eng.github.io/ai-daily-briefing
         run: python scripts/generate_briefing.py
 
-      - name: Commit and push HTML
+      - name: Commit and push
         run: |
           git config user.name "AI Briefing Bot"
           git config user.email "bot@noreply.github.com"
