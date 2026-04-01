@@ -79,9 +79,6 @@ def search_and_get_json(builders_data):
     raw_info = call_claude_with_search(search_prompt)
     print(f"   原始: {len(raw_info)} chars")
 
-    # Build handle reference
-    handle_ref = "\n".join(f"- {b['name']}: {b['handle']}" for b in builders_data["builders"])
-
     # Step 2: 生成故事卷轴 JSON
     format_prompt = f"""你是一个给外行朋友讲 AI 新闻的人。基于以下原始信息，生成一份「故事卷轴」简报。
 
@@ -89,9 +86,6 @@ def search_and_get_json(builders_data):
 ---
 {raw_info}
 ---
-
-人物 Twitter 账号参考（用于 card 的 handle 字段）：
-{handle_ref}
 
 要求：
 1. 用对话口语写，像在跟一个完全不懂 AI 的朋友聊天
@@ -120,7 +114,6 @@ def search_and_get_json(builders_data):
       "type": "card",
       "category": "人物",
       "name": "人物全名",
-      "handle": "@twitter_handle（从上面的参考列表里找）",
       "text": "3-5句话介绍这个人是谁、做过什么、为什么重要。用 **双星号** 标记重点。"
     }},
     {{
@@ -133,14 +126,12 @@ def search_and_get_json(builders_data):
       "type": "card",
       "category": "公司",
       "name": "公司名",
-      "handle": "company.com（公司官网域名）",
       "text": "3-5句话介绍这家公司做什么、在行业中的地位。"
     }},
     {{
       "type": "card",
       "category": "术语",
       "name": "术语名",
-      "handle": "",
       "text": "用大白话解释这个术语，可以用比喻，3-5句话"
     }},
     {{
@@ -154,9 +145,7 @@ def search_and_get_json(builders_data):
 - screens 数量 7-11 个（1 intro + 3-5 story + 2-3 card + 1 outro）
 - card 穿插在 story 之间，紧跟相关 story 后面
 - card 至少 2 张，类型可以是人物、公司或术语的组合
-- 人物 card 的 handle 必须是 @xxx 格式的 Twitter 账号
-- 公司 card 的 handle 必须是 xxx.com 格式的官网域名
-- 全部中文，不要出现英文（handle 字段除外）
+- 全部中文，不要出现英文
 - 对话感要强，可以用"你知道吗""说白了""有意思的是"这类口语
 - 不要用"大家好""今天的简报"这种播报腔"""
 
@@ -307,20 +296,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     letter-spacing: 1px;
     margin-bottom: 20px;
   }}
-  .card-avatar {{
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 16px;
-    background: #e8e8ed;
-  }}
-  .card-logo {{
-    height: 40px;
-    max-width: 160px;
-    object-fit: contain;
-    margin-bottom: 16px;
-  }}
   .card-name {{
     font-size: 24px;
     font-weight: 700;
@@ -393,7 +368,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .story-headline {{ font-size: 20px; }}
     .story-text {{ font-size: 16px; line-height: 1.95; }}
     .card-name {{ font-size: 22px; }}
-    .card-avatar {{ width: 64px; height: 64px; }}
     .outro-text {{ font-size: 18px; }}
   }}
 </style>
@@ -491,18 +465,10 @@ def render_html(data):
             handle = screen.get("handle", "")
             text = _bold(html_module.escape(screen.get("text", "")))
             emoji, badge_color = CARD_BADGES.get(category, ("💡", "#5b5ea6"))
-            # Build image tag
-            img_html = ""
-            if category == "人物" and handle.startswith("@"):
-                h = html_module.escape(handle[1:])
-                img_html = f'<img class="card-avatar" src="https://unavatar.io/x/{h}" alt="" onerror="this.style.display=\'none\'">\n    '
-            elif category == "公司" and "." in handle:
-                d = html_module.escape(handle)
-                img_html = f'<img class="card-logo" src="https://logo.clearbit.com/{d}" alt="" onerror="this.style.display=\'none\'">\n    '
             inner = f"""<div class="screen screen-card">
   <div class="screen-inner">
     <div class="card-badge" style="color:{badge_color}">{emoji} {html_module.escape(category)}卡片</div>
-    {img_html}<div class="card-name">{name}</div>
+    <div class="card-name">{name}</div>
     <div class="card-text">{text}</div>
   </div>
 </div>"""
