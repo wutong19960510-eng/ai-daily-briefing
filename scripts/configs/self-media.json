@@ -1,0 +1,49 @@
+{
+  "theme_id": "self-media",
+  "title": "创作者罗盘",
+  "subtitle": "中国自媒体行业每日风向",
+  "search_scope": "中国自媒体行业趋势、创作者经济、平台政策变动（抖音/小红书/B站/视频号/快手）、AI创作工具与AIGC监管、内容电商与直播带货、短视频与中长视频生态、知识付费与私域变现、视频播客、MCN机构动态",
+  "bark_title": "🧭 创作者罗盘已更新",
+  "builders": [
+    {"name": "李子柒", "handle": "@李子柒", "role": "全球顶级文化内容创作者，2024年底复出"},
+    {"name": "董宇辉", "handle": "@董宇辉", "role": "与辉同行创始人，知识型直播电商标杆"},
+    {"name": "papi酱", "handle": "@papi酱", "role": "初代短视频网红，专注纯内容创作"},
+    {"name": "杨天真", "handle": "@杨天真", "role": "壹心娱乐创始人，横跨直播/播客/出版"},
+    {"name": "影视飓风Tim", "handle": "@影视飓风Tim", "role": "B站头部科技博主，年营收破亿"},
+    {"name": "何同学", "handle": "@老师好我叫何同学", "role": "B站顶级科技博主"},
+    {"name": "赛博课堂", "handle": "@赛博课堂", "role": "清华00后团队，7天涨粉400万"},
+    {"name": "雷军", "handle": "@雷军", "role": "小米创始人，企业家IP流量之王"},
+    {"name": "周鸿祎", "handle": "@周鸿祎", "role": "360创始人，企业家IP实践先锋"},
+    {"name": "罗振宇", "handle": "@罗振宇", "role": "得到App创始人，知识付费标杆"},
+    {"name": "吴晓波", "handle": "@吴晓波频道", "role": "财经作家，年度跨年演讲"},
+    {"name": "刘润", "handle": "@刘润", "role": "商业顾问，进化岛社群主理人"},
+    {"name": "张琦", "handle": "@张琦", "role": "短视频知识付费天花板"},
+    {"name": "潘乱", "handle": "@乱翻书", "role": "互联网行业观察者，播客主理人"},
+    {"name": "雷彬艺", "handle": "@无忧传媒", "role": "无忧传媒创始人，抖音第一MCN"},
+    {"name": "毛文超", "handle": "@小红书", "role": "小红书联合创始人兼CEO"},
+    {"name": "程一笑", "handle": "@快手", "role": "快手联合创始人/董事长兼CEO"},
+    {"name": "韩尚佑", "handle": "@抖音", "role": "抖音总裁，统管电商/本地生活/广告"},
+    {"name": "张楠", "handle": "@剪映", "role": "字节副总裁，剪映/CapCut负责人"},
+    {"name": "徐达内", "handle": "@新榜", "role": "新榜创始人，内容产业数据服务"},
+    {"name": "张宇彤", "handle": "@克劳锐", "role": "克劳锐总经理，新媒体价值评估"},
+    {"name": "陈维贤", "handle": "@运营研究社", "role": "运营研究社创始人"}
+  ],
+  "podcasts": [
+    {"name": "天真不天真", "handle": "@天真不天真"},
+    {"name": "乱翻书", "handle": "@乱翻书"},
+    {"name": "商业就是这样", "handle": "@商业就是这样"},
+    {"name": "疯投圈", "handle": "@疯投圈"},
+    {"name": "创业内幕", "handle": "@创业内幕"},
+    {"name": "声动早咖啡", "handle": "@声动早咖啡"},
+    {"name": "进化岛", "handle": "@进化岛"}
+  ],
+  "blogs": [
+    {"name": "新榜", "url": "https://newrank.cn"},
+    {"name": "克劳锐", "url": "https://topklout.com"},
+    {"name": "卡思数据", "url": "https://www.caasdata.com"},
+    {"name": "36氪", "url": "https://36kr.com"},
+    {"name": "QuestMobile", "url": "https://www.questmobile.cn"},
+    {"name": "刺猬公社", "url": "https://mp.weixin.qq.com"},
+    {"name": "运营研究社", "url": "https://mp.weixin.qq.com"}
+  ]
+}
