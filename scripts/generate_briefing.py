@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""每日 AI 简报 — 中文深度摘要，信息终点而非链接导航"""
+"""每日 AI 简报 — 故事卷轴 + 对话体"""
 
 import os
 import json
@@ -65,26 +65,21 @@ def search_and_get_json(builders_data):
     builder_names = ", ".join(f'{b["name"]} ({b["role"]})' for b in builders_data["builders"])
     podcast_names = ", ".join(p["name"] for p in builders_data["podcasts"])
 
-    # Step 1: 搜索原始信息
-    search_prompt = f"""今天是 {today}。搜索以下 AI 领域关键人物和机构的最新动态（最近一周内都可以）：
+    # Step 1: 搜索
+    search_prompt = f"""今天是 {today}。搜索以下 AI 领域关键人物和机构的最新动态（最近一周内）：
 
 人物：{builder_names}
 播客：{podcast_names}
 博客：Anthropic、OpenAI、Google DeepMind
 
-对每条信息，尽量详细记录：
-- 谁发布/说了什么
-- 具体的技术细节、观点论据、产品特性
-- 背景和上下文
-
-用中文记录，越详细越好。"""
+对每条信息尽量详细记录：谁、说了/做了什么、技术细节、背景。中文记录。"""
 
     print("   Step 1: 搜索...")
     raw_info = call_claude_with_search(search_prompt)
     print(f"   原始: {len(raw_info)} chars")
 
-    # Step 2: 生成深度摘要 JSON
-    format_prompt = f"""你是一个中文 AI 行业简报作者。基于以下原始信息，生成一份深度简报。
+    # Step 2: 生成故事卷轴 JSON
+    format_prompt = f"""你是一个给外行朋友讲 AI 新闻的人。基于以下原始信息，生成一份「故事卷轴」简报。
 
 原始信息：
 ---
@@ -92,34 +87,52 @@ def search_and_get_json(builders_data):
 ---
 
 要求：
-1. 每条内容写成 200-400 字的完整中文短文，不是一两句话
-2. 包含：谁（人名+身份）、说了/做了什么（核心内容完整展开）、为什么重要
-3. 读者是中文用户，看不懂英文，不会点链接看原文。你的摘要就是他获取信息的唯一渠道
-4. 语言要有信息密度，不要水字数，但也不要过度压缩丢失关键细节
+1. 用对话口语写，像在跟一个完全不懂 AI 的朋友聊天
+2. 精选 3-5 条最值得讲的内容（不要贪多）
+3. 内容之间要有逻辑连接和过渡（不是独立的几块）
+4. 提到的人物/公司/术语，第一次出现时自然地解释（融入对话，不要单独列）
+5. 如果有某个术语特别重要且解释起来需要篇幅，单独做一个术语卡片屏
+6. 最后一屏做一个收尾总结
 
 直接输出 JSON（不要 ```）：
 
 {{
   "date": "{today}",
-  "trend_summary": "今日趋势一句话（中文，15-25字）",
-  "articles": [
+  "screens": [
     {{
-      "tag": "分类标签（如：模型发布/行业观点/产品更新/融资动态/技术博客/播客精华）",
-      "author": "人名",
-      "author_title": "身份（如 OpenAI CEO / Anthropic 研究员）",
-      "title": "这条信息的中文标题（10-20字）",
-      "body": "200-400字的完整中文摘要。分段用 \\n\\n 分隔。"
+      "type": "intro",
+      "text": "开场白，点出今天的主线是什么，1-3句话，口语化"
+    }},
+    {{
+      "type": "story",
+      "label": "短标签如'模型发布'或'行业观点'",
+      "text": "200-350字的对话体叙述。像跟朋友聊天一样讲清楚这件事。第一次提到的人要介绍身份。段落间用 \\n\\n 分隔。"
+    }},
+    {{
+      "type": "story",
+      "label": "标签",
+      "text": "下一个信息点。开头要有过渡句，跟上一屏有呼应。"
+    }},
+    {{
+      "type": "term",
+      "word": "术语名",
+      "explain": "用大白话解释这个术语，可以用比喻，3-5句话"
+    }},
+    {{
+      "type": "outro",
+      "text": "收尾总结，今天的核心收获是什么，1-3句话"
     }}
   ]
 }}
 
 规则：
-- articles 按重要性排序，最重要的在前
-- 同一个人的多条动态可以合并为一篇
-- 没有实质内容的不要凑数
-- body 里不要出现英文原文，全部翻译为中文"""
+- screens 数量 6-9 个（1 intro + 3-5 story + 0-2 term + 1 outro）
+- 全部中文，不要出现英文
+- 对话感要强，可以用"你知道吗""说白了""有意思的是"这类口语
+- 不要用"大家好""今天的简报"这种播报腔
+- term 类型的屏只在术语确实需要额外解释时才加，不要每期都硬加"""
 
-    print("   Step 2: 深度摘要...")
+    print("   Step 2: 故事卷轴...")
     raw_json = call_claude([{"role": "user", "content": format_prompt}])
     text = "\n".join(b["text"] for b in raw_json.get("content", []) if b.get("type") == "text").strip()
 
@@ -130,14 +143,13 @@ def search_and_get_json(builders_data):
     text = text.strip()
     print(f"   JSON: {len(text)} chars")
 
-    # 解析 + 自动修复
     for attempt in range(3):
         try:
             return json.loads(text)
         except json.JSONDecodeError as e:
             if attempt < 2:
-                print(f"   [JSON fix attempt {attempt+1}: {e}]")
-                fix = call_claude([{"role": "user", "content": f"修复这段 JSON 的语法错误，只输出正确 JSON（不要 ```）：\n\n{text}"}])
+                print(f"   [fix attempt {attempt+1}: {e}]")
+                fix = call_claude([{"role": "user", "content": f"修复 JSON 语法错误，只输出正确 JSON（不要 ```）：\n\n{text}"}])
                 text = "\n".join(b["text"] for b in fix.get("content", []) if b.get("type") == "text").strip()
                 if text.startswith("```"):
                     text = text.split("\n", 1)[1] if "\n" in text else text[3:]
@@ -145,193 +157,284 @@ def search_and_get_json(builders_data):
                     text = text[:-3]
                 text = text.strip()
             else:
-                print(f"   [JSON failed]")
-                return {
-                    "date": today,
-                    "trend_summary": "AI 行业每日动态",
-                    "articles": [{"tag": "简报", "author": "", "author_title": "",
-                                  "title": "今日简报", "body": raw_info[:3000]}]
-                }
+                print("   [JSON failed]")
+                return {"date": today, "screens": [
+                    {"type": "intro", "text": "今天的简报生成遇到了点问题，明天见。"}
+                ]}
 
 
-# ──────────── HTML ────────────
+# ──────── HTML ────────
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>AI 简报 · {date}</title>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  html {{ scroll-snap-type: y mandatory; scroll-behavior: smooth; }}
   body {{
-    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
     background: #fafafa;
     color: #1a1a1a;
-    line-height: 1.85;
     -webkit-font-smoothing: antialiased;
-  }}
-  .container {{ max-width: 680px; margin: 0 auto; padding: 20px 18px 60px; }}
-
-  .header {{
-    text-align: center;
-    padding: 32px 0 24px;
-    margin-bottom: 20px;
-  }}
-  .header-sub {{ font-size: 11px; letter-spacing: 2px; color: #999; text-transform: uppercase; margin-bottom: 8px; }}
-  .header h1 {{ font-size: 26px; font-weight: 700; color: #1a1a1a; }}
-  .header .date {{ font-size: 14px; color: #999; margin-top: 4px; }}
-
-  .trend {{
-    background: #f0f0f5;
-    border-left: 4px solid #5b5ea6;
-    border-radius: 0 10px 10px 0;
-    padding: 16px 20px;
-    margin-bottom: 28px;
-    font-size: 16px;
-    color: #333;
-    font-weight: 500;
+    overflow-x: hidden;
   }}
 
-  .nav {{ text-align: center; margin-bottom: 24px; }}
-  .nav a {{
-    font-size: 13px; color: #5b5ea6; text-decoration: none;
-    padding: 5px 14px; border: 1px solid #e0e0e0; border-radius: 6px;
-  }}
-
-  .article {{
-    background: #fff;
-    border-radius: 12px;
-    padding: 22px 22px 18px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  }}
-  .article-header {{
+  .screen {{
+    min-height: 100vh;
+    min-height: 100dvh;
+    scroll-snap-align: start;
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 24px;
+    position: relative;
   }}
-  .tag {{
+  .screen-inner {{
+    max-width: 560px;
+    margin: 0 auto;
+    width: 100%;
+  }}
+
+  /* Intro */
+  .screen-intro {{
+    background: #fafafa;
+  }}
+  .intro-date {{
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #aaa;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }}
+  .intro-text {{
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.7;
+    color: #1a1a1a;
+  }}
+  .intro-hint {{
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #ccc;
+    animation: bounce 2s ease infinite;
+  }}
+  @keyframes bounce {{
+    0%, 100% {{ transform: translateX(-50%) translateY(0); }}
+    50% {{ transform: translateX(-50%) translateY(-8px); }}
+  }}
+
+  /* Story */
+  .screen-story {{
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+  }}
+  .story-label {{
+    display: inline-block;
     font-size: 11px;
     font-weight: 600;
-    padding: 3px 10px;
+    padding: 4px 12px;
     border-radius: 4px;
+    margin-bottom: 18px;
     color: #fff;
-    white-space: nowrap;
   }}
-  .tag-模型发布 {{ background: #e74c3c; }}
-  .tag-行业观点 {{ background: #3498db; }}
-  .tag-产品更新 {{ background: #2ecc71; }}
-  .tag-融资动态 {{ background: #f39c12; }}
-  .tag-技术博客 {{ background: #9b59b6; }}
-  .tag-播客精华 {{ background: #1abc9c; }}
-  .tag-default {{ background: #7f8c8d; }}
+  .label-模型发布 {{ background: #e74c3c; }}
+  .label-行业观点 {{ background: #3498db; }}
+  .label-产品更新 {{ background: #2ecc71; }}
+  .label-融资动态 {{ background: #f39c12; }}
+  .label-技术博客 {{ background: #9b59b6; }}
+  .label-播客精华 {{ background: #1abc9c; }}
+  .label-重要动态 {{ background: #e67e22; }}
+  .label-default {{ background: #7f8c8d; }}
 
-  .author-info {{
-    font-size: 13px;
-    color: #666;
+  .story-text {{
+    font-size: 17px;
+    line-height: 2;
+    color: #2a2a2a;
   }}
-  .author-name {{
-    font-weight: 600;
-    color: #1a1a1a;
+  .story-text p {{
+    margin-bottom: 14px;
   }}
-
-  .article-title {{
-    font-size: 18px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin-bottom: 10px;
-    line-height: 1.5;
-  }}
-  .article-body {{
-    font-size: 15px;
-    color: #333;
-    line-height: 1.9;
-  }}
-  .article-body p {{
-    margin-bottom: 10px;
-  }}
-  .article-body p:last-child {{
+  .story-text p:last-child {{
     margin-bottom: 0;
   }}
 
-  .footer {{
-    text-align: center;
-    padding-top: 24px;
+  /* Term */
+  .screen-term {{
+    background: #f0f0f5;
+  }}
+  .term-badge {{
     font-size: 12px;
+    color: #5b5ea6;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }}
+  .term-word {{
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+  }}
+  .term-explain {{
+    font-size: 17px;
+    line-height: 2;
+    color: #444;
+  }}
+
+  /* Outro */
+  .screen-outro {{
+    background: #fafafa;
+  }}
+  .outro-text {{
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: #1a1a1a;
+  }}
+  .outro-bye {{
+    margin-top: 20px;
+    font-size: 14px;
     color: #aaa;
+  }}
+  .outro-nav {{
+    margin-top: 28px;
+  }}
+  .outro-nav a {{
+    font-size: 13px;
+    color: #5b5ea6;
+    text-decoration: none;
+    padding: 8px 18px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }}
+
+  /* Progress dots */
+  .progress {{
+    position: fixed;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }}
+  .dot {{
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s;
+  }}
+  .dot.active {{
+    background: #5b5ea6;
+    transform: scale(1.5);
   }}
 
   @media (max-width: 480px) {{
-    .container {{ padding: 14px 14px 40px; }}
-    .article {{ padding: 18px 16px 14px; }}
-    .article-title {{ font-size: 17px; }}
-    .article-body {{ font-size: 14.5px; }}
+    .screen {{ padding: 32px 20px; }}
+    .intro-text {{ font-size: 20px; }}
+    .story-text {{ font-size: 16px; line-height: 1.95; }}
+    .term-word {{ font-size: 22px; }}
+    .outro-text {{ font-size: 18px; }}
   }}
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <div class="header-sub">Follow Builders, Not Influencers</div>
-    <h1>AI 简报</h1>
-    <div class="date">{date}</div>
-  </div>
 
-  <div class="trend">💡 {trend_summary}</div>
-
-  <div class="nav"><a href="index.html">📚 历史简报</a></div>
-
-  {articles_html}
-
-  <div class="footer">自动生成 · Powered by Claude</div>
+<div class="progress" id="progress">
+  {dots_html}
 </div>
+
+{screens_html}
+
+<script>
+  const screens = document.querySelectorAll('.screen');
+  const dots = document.querySelectorAll('.dot');
+  const observer = new IntersectionObserver((entries) => {{
+    entries.forEach(entry => {{
+      if (entry.isIntersecting) {{
+        const idx = [...screens].indexOf(entry.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }}
+    }});
+  }}, {{ threshold: 0.5 }});
+  screens.forEach(s => observer.observe(s));
+</script>
+
 </body>
 </html>"""
 
 
-TAG_CLASSES = {"模型发布", "行业观点", "产品更新", "融资动态", "技术博客", "播客精华"}
+LABEL_CLASSES = {"模型发布", "行业观点", "产品更新", "融资动态", "技术博客", "播客精华", "重要动态"}
 
 
 def render_html(data):
     date = html_module.escape(data.get("date", ""))
-    trend = html_module.escape(data.get("trend_summary", ""))
+    screens = data.get("screens", [])
 
-    articles_html = ""
-    for a in data.get("articles", []):
-        tag = a.get("tag", "")
-        tag_class = f"tag-{tag}" if tag in TAG_CLASSES else "tag-default"
-        author = html_module.escape(a.get("author", ""))
-        author_title = html_module.escape(a.get("author_title", ""))
-        title = html_module.escape(a.get("title", ""))
+    dots_html = "\n  ".join(f'<div class="dot{"  active" if i == 0 else ""}"></div>' for i in range(len(screens)))
 
-        # body: 按 \n\n 分段
-        body_raw = a.get("body", "")
-        paragraphs = [p.strip() for p in body_raw.split("\n\n") if p.strip()]
-        if not paragraphs:
-            paragraphs = [p.strip() for p in body_raw.split("\n") if p.strip()]
-        body_html = "".join(f"<p>{html_module.escape(p)}</p>" for p in paragraphs)
+    screens_html = ""
+    for screen in screens:
+        stype = screen.get("type", "story")
+        inner = ""
 
-        author_line = ""
-        if author:
-            author_line = f'<span class="author-name">{author}</span>'
-            if author_title:
-                author_line += f" · {author_title}"
-            author_line = f'<div class="author-info">{author_line}</div>'
-
-        articles_html += f"""<div class="article">
-  <div class="article-header">
-    <span class="tag {html_module.escape(tag_class)}">{html_module.escape(tag)}</span>
-    {author_line}
+        if stype == "intro":
+            text = html_module.escape(screen.get("text", ""))
+            inner = f"""<div class="screen screen-intro">
+  <div class="screen-inner">
+    <div class="intro-date">AI 简报 · {date}</div>
+    <div class="intro-text">{text}</div>
   </div>
-  <div class="article-title">{title}</div>
-  <div class="article-body">{body_html}</div>
-</div>
-"""
+  <div class="intro-hint">↓ 向下滑动</div>
+</div>"""
 
-    return HTML_TEMPLATE.format(date=date, trend_summary=trend, articles_html=articles_html)
+        elif stype == "story":
+            label = screen.get("label", "")
+            label_class = f"label-{label}" if label in LABEL_CLASSES else "label-default"
+            raw_text = screen.get("text", "")
+            paragraphs = [p.strip() for p in raw_text.split("\n\n") if p.strip()]
+            if not paragraphs:
+                paragraphs = [p.strip() for p in raw_text.split("\n") if p.strip()]
+            body = "".join(f"<p>{html_module.escape(p)}</p>" for p in paragraphs)
+            inner = f"""<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label {html_module.escape(label_class)}">{html_module.escape(label)}</div>
+    <div class="story-text">{body}</div>
+  </div>
+</div>"""
+
+        elif stype == "term":
+            word = html_module.escape(screen.get("word", ""))
+            explain = html_module.escape(screen.get("explain", ""))
+            inner = f"""<div class="screen screen-term">
+  <div class="screen-inner">
+    <div class="term-badge">💡 术语卡片</div>
+    <div class="term-word">{word}</div>
+    <div class="term-explain">{explain}</div>
+  </div>
+</div>"""
+
+        elif stype == "outro":
+            text = html_module.escape(screen.get("text", ""))
+            inner = f"""<div class="screen screen-outro">
+  <div class="screen-inner">
+    <div class="outro-text">{text}</div>
+    <div class="outro-bye">明天见 👋</div>
+    <div class="outro-nav"><a href="index.html">📚 历史简报</a></div>
+  </div>
+</div>"""
+
+        screens_html += inner + "\n"
+
+    return HTML_TEMPLATE.format(date=date, dots_html=dots_html, screens_html=screens_html)
 
 
 INDEX_TEMPLATE = """<!DOCTYPE html>
@@ -343,24 +446,24 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
   body {{ font-family: -apple-system, "PingFang SC", sans-serif; background:#fafafa; color:#1a1a1a; }}
-  .container {{ max-width:600px; margin:0 auto; padding:40px 16px; }}
-  h1 {{ text-align:center; font-size:24px; margin-bottom:6px; }}
-  .sub {{ text-align:center; color:#999; font-size:12px; margin-bottom:28px; }}
-  .list a {{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:14px 18px; margin-bottom:8px;
+  .c {{ max-width:560px; margin:0 auto; padding:48px 20px; }}
+  h1 {{ font-size:22px; text-align:center; margin-bottom:4px; }}
+  .sub {{ text-align:center; color:#aaa; font-size:12px; margin-bottom:32px; }}
+  a {{
+    display:flex; justify-content:space-between;
+    padding:16px 18px; margin-bottom:8px;
     background:#fff; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.04);
     color:#1a1a1a; text-decoration:none; font-size:15px;
   }}
-  .list a:active {{ background:#f5f5f5; }}
-  .list a span {{ color:#ccc; }}
+  a:active {{ background:#f5f5f5; }}
+  a span {{ color:#ccc; }}
 </style>
 </head>
 <body>
-<div class="container">
+<div class="c">
   <h1>AI 简报</h1>
   <div class="sub">Follow Builders, Not Influencers</div>
-  <div class="list">{links}</div>
+  {links}
 </div>
 </body>
 </html>"""
@@ -397,15 +500,15 @@ def main():
     print("📡 AI 简报...")
     builders_data = load_builders()
     briefing = search_and_get_json(builders_data)
-    n = len(briefing.get("articles", []))
-    print(f"   {n} articles")
+    n = len(briefing.get("screens", []))
+    print(f"   {n} screens")
 
     html = render_html(briefing)
     url = save_html(briefing, html)
     print(f"   {url}")
 
     today = briefing.get("date", datetime.date.today().strftime("%Y-%m-%d"))
-    send_bark("📡 AI 简报已更新", f"{today} · {n} 条深度摘要", url=url)
+    send_bark("📡 AI 简报已更新", f"{today}", url=url)
     print("✅ done")
 
 
