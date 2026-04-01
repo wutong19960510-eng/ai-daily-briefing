@@ -69,10 +69,10 @@
   }
   .story-label {
     display: inline-block;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 4px;
+    padding: 5px 14px;
+    border-radius: 6px;
     margin-bottom: 12px;
     color: #fff;
     letter-spacing: 0.5px;
@@ -81,17 +81,8 @@
     font-size: 22px;
     font-weight: 700;
     line-height: 1.5;
-    color: #1a1a1a;
     margin-bottom: 16px;
   }
-  .label-模型发布 { background: #e74c3c; }
-  .label-行业观点 { background: #3498db; }
-  .label-产品更新 { background: #2ecc71; }
-  .label-融资动态 { background: #f39c12; }
-  .label-技术博客 { background: #9b59b6; }
-  .label-播客精华 { background: #1abc9c; }
-  .label-重要动态 { background: #e67e22; }
-  .label-default { background: #7f8c8d; }
 
   .story-text {
     font-size: 17px;
@@ -110,32 +101,45 @@
     background: linear-gradient(to top, rgba(91,94,166,0.12) 40%, transparent 40%);
     padding: 0 2px;
   }
-  .term-explain strong {
-    font-weight: 600;
-    color: #1a1a1a;
-  }
 
-  /* Term */
-  .screen-term {
-    background: #f0f0f5;
+  /* Card (人物/公司/术语) */
+  .screen-card {
+    background: #f5f5fa;
   }
-  .term-badge {
+  .card-badge {
     font-size: 12px;
-    color: #5b5ea6;
     font-weight: 600;
     letter-spacing: 1px;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
   }
-  .term-word {
-    font-size: 26px;
-    font-weight: 700;
-    color: #1a1a1a;
+  .card-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 16px;
+    background: #e8e8ed;
+  }
+  .card-logo {
+    height: 40px;
+    max-width: 160px;
+    object-fit: contain;
     margin-bottom: 16px;
   }
-  .term-explain {
+  .card-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 14px;
+  }
+  .card-text {
     font-size: 17px;
     line-height: 2;
     color: #444;
+  }
+  .card-text strong {
+    font-weight: 600;
+    color: #1a1a1a;
   }
 
   /* Outro */
@@ -193,7 +197,8 @@
     .intro-text { font-size: 20px; }
     .story-headline { font-size: 20px; }
     .story-text { font-size: 16px; line-height: 1.95; }
-    .term-word { font-size: 22px; }
+    .card-name { font-size: 22px; }
+    .card-avatar { width: 64px; height: 64px; }
     .outro-text { font-size: 18px; }
   }
 </style>
@@ -208,53 +213,73 @@
   <div class="dot"></div>
   <div class="dot"></div>
   <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
 </div>
 
 <div class="screen screen-intro">
   <div class="screen-inner">
     <div class="intro-date">AI 简报 · 2026-04-01</div>
-    <div class="intro-text">最近AI圈特别热闹，从自主机器人到融合能源，再到OpenAI的疯狂融资，感觉AI不再是实验室里的玩意儿，开始真的要进入我们的生活了。今天聊几件特别有意思的事。</div>
+    <div class="intro-text">最近AI圈有几件特别有意思的事儿，从一个人用AI来改进AI的实验，到大佬们对AI未来的新想法，咱们今天聊几个最值得关注的。</div>
   </div>
   <div class="intro-hint">↓ 向下滑动</div>
 </div>
 <div class="screen screen-story">
   <div class="screen-inner">
-    <div class="story-label label-default">自主代理</div>
-    <div class="story-headline">AI不再需要应用商店，自己就能控制你家里的东西</div>
-    <div class="story-text"><p>你知道 <strong>Andrej Karpathy</strong> 吗？他之前是特斯拉的AI负责人，现在独立搞研究。最近他演示了一个叫「Dobby」的AI代理，说白了就是一个聪明的AI助手，能扫描你家里连网的所有设备，然后自动搞清楚怎么控制它们——即使这些设备根本没有公开的说明书。</p><p>更厉害的是，你只需要用日常语言告诉它你想干什么，比如&quot;把客厅的灯调暗&quot;，它就能自动搞定 <strong>Sonos音箱</strong> 和照明系统这些设备。这意味着什么呢？以后你不用在手机上装十个不同的app来控制不同品牌的家居设备了，一个AI就全搞定。</p></div>
+    <div class="story-label" style="background:#e74c3c">研究突破</div>
+    <div class="story-headline" style="color:#c0392b">AI自己在做研究优化，一天700次实验</div>
+    <div class="story-text"><p>你知道吗，有个前Tesla的AI负责人最近发布了个超有意思的开源项目，说白了就是<strong>让AI自己来做机器学习的优化工作</strong>。他给AI一个固定的GPU时间预算——比如说5分钟吧——然后AI自己读自己的代码，想办法怎么改进，改了以后自己跑实验，看效果如何，然后继续改，就这么反复循环。</p><p>最夸张的是，他让这个AI连续跑了两天，结果它自己做了700次实验，还找到了20项优化方案，把训练时间显著缩短了。这条消息一发出来，<strong>两天内就有860多万人看到</strong>。有意思的是，后来还有人把这个想法升级了——他们用35个AI代理在点对点网络上跑，一晚上就做了333次实验，GPU疯狂硬算，而笔记本电脑上的CPU版本被迫更聪明，想了更多办法。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <img class="card-avatar" src="https://unavatar.io/x/karpathy" alt="" onerror="this.style.display='none'">
+    <div class="card-name">Andrej Karpathy</div>
+    <div class="card-text">前OpenAI联合创始人，后来做过Tesla的AI负责人，现在专注开源AI研究项目。他在深度学习领域是真大牛，最新的<strong>自动研究框架项目</strong>让AI自己优化AI，引发了整个社区的热议和改进。</div>
   </div>
 </div>
 <div class="screen screen-story">
   <div class="screen-inner">
-    <div class="story-label label-default">模型突破</div>
-    <div class="story-headline">GPT-5.4能一次性看100万字，自己干完整个工作流</div>
-    <div class="story-text"><p>OpenAI这边也有大动作。他们新发布的 <strong>GPT-5.4</strong> 有什么特殊的呢？最牛的是它的「记忆力」——能一次性处理 <strong>100万个token</strong>（简单理解就是100万个词的信息量），这比之前的版本扩大了好几倍。</p><p>更关键的是，这个模型学会了「自主工作流」，意思就是你给它一个任务，它不是问你一步一步该怎么做，而是能自己规划、自己执行好几个步骤，然后把结果给你。在一个模拟真实电脑操作的测试里，它的表现已经 <strong>超过人类平均水平</strong>。说白了，AI现在不仅仅是聪明，还变得特别「自主」了。</p></div>
+    <div class="story-label" style="background:#3498db">产品思路</div>
+    <div class="story-headline" style="color:#2471a3">未来AI不是变更聪明，而是更好用</div>
+    <div class="story-text"><p>OpenAI的CEO最近在采访中说了个挺有意思的观点，他说<strong>下一步AI的进化不是让模型的智商更高</strong>，而是要把AI真正融入到人们的日常工作里，而不是生硬地把聊天机器人套在旧系统上。</p><p>他特别强调了一个词叫<strong>记忆</strong>——说白了就是AI要记住你的历史、你的决定、你对它的信任，这样一旦你在这个平台上投入了这么多，就很难再换别的产品了。他还透露，OpenAI今年有个大计划，要<strong>把员工从4500人增加到8000人</strong>，主要都是用来改产品体验的。最后还有点意思的是，企业客户的增长速度已经超过了普通用户，所以OpenAI明年的重点也要调整过来。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <img class="card-avatar" src="https://unavatar.io/x/sama" alt="" onerror="this.style.display='none'">
+    <div class="card-name">Sam Altman</div>
+    <div class="card-text">OpenAI的首席执行官，也是ChatGPT背后的核心推手。他一直在思考<strong>AI的下一步方向不是性能，而是如何让AI真正融入生活</strong>，最近的想法是把记忆和个性化当作关键竞争力。</div>
   </div>
 </div>
 <div class="screen screen-story">
   <div class="screen-inner">
-    <div class="story-label label-default">伦理思考</div>
-    <div class="story-headline">越聪明的AI越难管，Anthropic开始教AI&quot;做好事&quot;的理由</div>
-    <div class="story-text"><p>这里有个很有意思的对比。Anthropic是另一个大的AI公司，他们的AI叫Claude。他们有个研究员叫 <strong>Amanda Askell</strong>，华尔街日报说她的工作就是「教Claude如何做好事」。</p><p>她最近强调了一个很深层的问题：与其就是简单地告诉AI「我们想要这种行为」，不如给AI解释为什么要这样做。就像教小孩一样，如果你只是说&quot;要听话&quot;，他到了新环境可能就不知道怎么办了；但如果你解释了&quot;听话是为了安全&quot;，他到哪儿都能自己判断。 <strong>Claude的新宪法</strong>（可以理解为AI的行为指南）就是按这个思路设计的。</p></div>
+    <div class="story-label" style="background:#9b59b6">伦理与安全</div>
+    <div class="story-headline" style="color:#7d3c98">给AI写&#x27;宪法&#x27;的哲学家火了</div>
+    <div class="story-text"><p>在AI越来越强大的背景下，有个更严肃的故事也在发生。Anthropic（就是那个融了30亿美元的AI大公司）有个研究员专门负责<strong>给AI写伦理规则</strong>，她是个来自苏格兰的哲学家，自2021年就在带团队给Claude这个AI定制个性和道德框架。</p><p>最新的Claude版本有个叫<strong>宪法</strong>的东西，里面规定了AI应该怎么表现、怎么思考问题，这位研究员是主要设计者。她最近在社区里讨论了这些背后的哲学思考——怎么才能让一个超级聪明的AI具有同理心、负责任、有原则。有点讽刺的是，特朗普总统最近还公开骂Anthropic是&#x27;觉醒左翼&#x27;，要禁止它给政府部门服务，但这完全阻止不了这些伦理讨论继续进行。</p></div>
   </div>
 </div>
-<div class="screen screen-story">
+<div class="screen screen-card">
   <div class="screen-inner">
-    <div class="story-label label-default">商业竞速</div>
-    <div class="story-headline">OpenAI月收入20亿，AI公司开始争夺千亿级市场</div>
-    <div class="story-text"><p>最后聊个数字，可能会吓你一跳。OpenAI现在的 <strong>月收入已经达到20亿美元</strong>，他们计划在2026年底前上市。同时，他们还在疯狂扩招，计划从4500员工扩到8000人。他们甚至在收购一些小公司，比如用来测试和保护AI代理的工具。</p><p>另一边，Anthropic现在年化收入接近 <strong>190亿美元</strong>。这俩公司一个月就赚的钱，足够养活小国家。说白了，高级AI模型已经从实验室里的项目，变成了科技行业增长最快的商业领地。整个格局在快速重塑。</p></div>
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <img class="card-avatar" src="https://unavatar.io/x/AmandaAskell" alt="" onerror="this.style.display='none'">
+    <div class="card-name">Amanda Askell</div>
+    <div class="card-text">Anthropic的资深研究员，专门研究AI的伦理对齐和个性发展。她<strong>用哲学背景来解决AI的道德问题</strong>，是最新Claude宪法的主要设计者，代表了AI安全领域最前沿的思考。</div>
   </div>
 </div>
-<div class="screen screen-term">
+<div class="screen screen-card">
   <div class="screen-inner">
-    <div class="term-badge">💡 术语卡片</div>
-    <div class="term-word">Token（令牌）</div>
-    <div class="term-explain">在AI语言模型里，token就是文本被分割成的最小单位。有时是一个词，有时是一个词的片段，有时是标点符号。模型其实是一个个处理这些token来理解和生成文本。你可以简单理解成：更多的token上下文窗口 = AI能一次性看更多的文字 = 记得更多的细节。</div>
+    <div class="card-badge" style="color:#3498db">🏢 公司卡片</div>
+    <img class="card-logo" src="https://logo.clearbit.com/anthropic.com" alt="" onerror="this.style.display='none'">
+    <div class="card-name">Anthropic</div>
+    <div class="card-text">2021年成立的AI安全公司，主要产品是Claude，一个注重安全和伦理的大语言模型。最近融了30亿美元，<strong>估值380亿美元</strong>，是仅次于OpenAI的AI明星公司，特别强调AI的安全性和道德性。</div>
   </div>
 </div>
 <div class="screen screen-outro">
   <div class="screen-inner">
-    <div class="outro-text">这一周最关键的变化就是：AI从被动工具变成了主动代理，从&quot;帮你做事&quot;升级到&quot;自己规划着做事&quot;。同时公司层面的竞争也白热化了，每个玩家都在拼命砸钱、扩团队、收购技术。感觉AI真的要进入我们的生活了。</div>
+    <div class="outro-text">说到底，最近这一周AI圈的故事都指向同一个方向：**AI不只是更强，更重要的是更聪明地用它、更安全地用它、更贴近人生活地用它**。这才是真正的下一步。</div>
     <div class="outro-bye">明天见 👋</div>
     <div class="outro-nav"><a href="index.html">📚 历史简报</a></div>
   </div>
