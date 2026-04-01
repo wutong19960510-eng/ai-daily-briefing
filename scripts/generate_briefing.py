@@ -31,16 +31,19 @@ def call_claude(messages, tools=None, model="claude-haiku-4-5-20251001"):
         body["tools"] = tools
 
     data = json.dumps(body).encode("utf-8")
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+    }
+    if tools:
+        headers["anthropic-beta"] = "web-search-2025-03-05"
     req = urllib.request.Request(
         "https://api.anthropic.com/v1/messages",
         data=data,
-        headers={
-            "Content-Type": "application/json",
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-        },
+        headers=headers,
     )
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    with urllib.request.urlopen(req, timeout=180) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
@@ -50,9 +53,23 @@ def call_claude_with_search(prompt):
     messages = [{"role": "user", "content": prompt}]
 
     # 循环处理 tool_use 响应
+    round_count = 0
     while True:
+        round_count += 1
+        print(f"   [API 调用 #{round_count}]")
         result = call_claude(messages, tools=tools)
         stop_reason = result.get("stop_reason", "")
+        print(f"   [stop_reason: {stop_reason}, content blocks: {len(result.get('content', []))}]")
+
+        # 打印 content block 类型
+        for block in result.get("content", []):
+            btype = block.get("type", "unknown")
+            if btype == "text":
+                print(f"   [text block: {len(block.get('text', ''))} chars]")
+            elif btype == "web_search_tool_result":
+                print(f"   [web_search_tool_result: {len(block.get('content', []))} results]")
+            else:
+                print(f"   [block type: {btype}]")
 
         if stop_reason == "end_turn":
             # 提取最终文本
