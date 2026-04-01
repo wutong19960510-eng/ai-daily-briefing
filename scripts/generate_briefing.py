@@ -152,19 +152,36 @@ def search_and_get_json(builders_data):
 
     print(f"   JSON: {len(text)} chars")
 
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError as e:
-        print(f"   [JSON error: {e}]")
-        print(f"   [Raw: {text[:500]}]")
-        return {
-            "date": today,
-            "trend_summary": "简报生成中遇到格式问题",
-            "sections": [{
-                "id": "raw", "title": "原始内容", "icon": "📄",
-                "items": [{"headline": "简报", "summary": raw_info[:2000], "source_name": "", "source_url": "", "author": ""}]
-            }]
-        }
+    # 尝试解析，失败则让 Claude 修复
+    for attempt in range(3):
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            if attempt < 2:
+                print(f"   [JSON error attempt {attempt+1}: {e}] fixing...")
+                fix_result = call_claude([{"role": "user", "content": f"以下 JSON 有语法错误，请修复并只输出正确的 JSON（不要 ```）：\n\n{text}"}])
+                text = "\n".join(b["text"] for b in fix_result.get("content", []) if b.get("type") == "text").strip()
+                if text.startswith("```"):
+                    text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+                if text.endswith("```"):
+                    text = text[:-3]
+                text = text.strip()
+            else:
+                print(f"   [JSON failed after 3 attempts: {e}]")
+                # 最终回退：用原始搜索内容拆段展示
+                paragraphs = raw_info.split("\n")
+                items = []
+                for p in paragraphs:
+                    p = p.strip()
+                    if len(p) > 10:
+                        items.append({"headline": p[:50], "summary": p, "source_name": "", "source_url": "", "author": ""})
+                    if len(items) >= 15:
+                        break
+                return {
+                    "date": today,
+                    "trend_summary": "AI 行业每日动态",
+                    "sections": [{"id": "all", "title": "今日动态", "icon": "📡", "items": items}]
+                }
 
 
 HTML_TEMPLATE = """<!DOCTYPE html>
