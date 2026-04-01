@@ -112,20 +112,6 @@
     letter-spacing: 1px;
     margin-bottom: 20px;
   }
-  .card-avatar {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 16px;
-    background: #e8e8ed;
-  }
-  .card-logo {
-    height: 40px;
-    max-width: 160px;
-    object-fit: contain;
-    margin-bottom: 16px;
-  }
   .card-name {
     font-size: 24px;
     font-weight: 700;
@@ -198,7 +184,6 @@
     .story-headline { font-size: 20px; }
     .story-text { font-size: 16px; line-height: 1.95; }
     .card-name { font-size: 22px; }
-    .card-avatar { width: 64px; height: 64px; }
     .outro-text { font-size: 18px; }
   }
 </style>
@@ -220,66 +205,62 @@
 <div class="screen screen-intro">
   <div class="screen-inner">
     <div class="intro-date">AI 简报 · 2026-04-01</div>
-    <div class="intro-text">最近AI圈有几件特别有意思的事儿，从一个人用AI来改进AI的实验，到大佬们对AI未来的新想法，咱们今天聊几个最值得关注的。</div>
+    <div class="intro-text">最近AI圈发生了好多有意思的事儿。今天我想给你讲讲三个特别值得关注的新动向，从AI怎么自己做研究、到大公司在忙什么、再到AI代理会怎么改变工作。咱们一块儿来看。</div>
   </div>
   <div class="intro-hint">↓ 向下滑动</div>
 </div>
 <div class="screen screen-story">
   <div class="screen-inner">
-    <div class="story-label" style="background:#e74c3c">研究突破</div>
-    <div class="story-headline" style="color:#c0392b">AI自己在做研究优化，一天700次实验</div>
-    <div class="story-text"><p>你知道吗，有个前Tesla的AI负责人最近发布了个超有意思的开源项目，说白了就是<strong>让AI自己来做机器学习的优化工作</strong>。他给AI一个固定的GPU时间预算——比如说5分钟吧——然后AI自己读自己的代码，想办法怎么改进，改了以后自己跑实验，看效果如何，然后继续改，就这么反复循环。</p><p>最夸张的是，他让这个AI连续跑了两天，结果它自己做了700次实验，还找到了20项优化方案，把训练时间显著缩短了。这条消息一发出来，<strong>两天内就有860多万人看到</strong>。有意思的是，后来还有人把这个想法升级了——他们用35个AI代理在点对点网络上跑，一晚上就做了333次实验，GPU疯狂硬算，而笔记本电脑上的CPU版本被迫更聪明，想了更多办法。</p></div>
+    <div class="story-label" style="background:#e74c3c">AI自主研究</div>
+    <div class="story-headline" style="color:#c0392b">AI学会了自己做实验，而且还挺聪明</div>
+    <div class="story-text"><p>你知道吗，有个AI研究员叫卡帕西——他之前在特斯拉负责AI项目——最近推出了一个叫&quot;自动研究&quot;的工具。说白了，这个工具能让AI代理自己跑机器学习实验，<strong>只需要一块显卡就能干活</strong>。</p><p>他做过一个超有趣的测试：让AI代理连续跑了两天实验，总共做了700多次不同的尝试，最后它自己发现了20项能加快训练速度的优化技巧。然后把这些技巧用在实际的语言模型上，<strong>训练时间一下子快了11%</strong>。</p><p>你想想，以前都是人类研究员手工试错，现在AI能自己干这事儿了。这意味着什么呢？意味着AI研究本身可能也要被自动化了。</p></div>
   </div>
 </div>
 <div class="screen screen-card">
   <div class="screen-inner">
     <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
-    <img class="card-avatar" src="https://unavatar.io/x/karpathy" alt="" onerror="this.style.display='none'">
-    <div class="card-name">Andrej Karpathy</div>
-    <div class="card-text">前OpenAI联合创始人，后来做过Tesla的AI负责人，现在专注开源AI研究项目。他在深度学习领域是真大牛，最新的<strong>自动研究框架项目</strong>让AI自己优化AI，引发了整个社区的热议和改进。</div>
+    <div class="card-name">安德烈·卡帕西（Andrej Karpathy）</div>
+    <div class="card-text"><strong>前特斯拉AI部门负责人</strong>，现在是独立AI研究员。他在深度学习和计算机视觉领域很有名，曾经教过斯坦福很受欢迎的卷积神经网络课程。最近因为推出&quot;自动研究&quot;框架引起关注，这个框架能让AI自主进行机器学习实验。他还在研究AI对不同职业的影响。</div>
   </div>
 </div>
 <div class="screen screen-story">
   <div class="screen-inner">
-    <div class="story-label" style="background:#3498db">产品思路</div>
-    <div class="story-headline" style="color:#2471a3">未来AI不是变更聪明，而是更好用</div>
-    <div class="story-text"><p>OpenAI的CEO最近在采访中说了个挺有意思的观点，他说<strong>下一步AI的进化不是让模型的智商更高</strong>，而是要把AI真正融入到人们的日常工作里，而不是生硬地把聊天机器人套在旧系统上。</p><p>他特别强调了一个词叫<strong>记忆</strong>——说白了就是AI要记住你的历史、你的决定、你对它的信任，这样一旦你在这个平台上投入了这么多，就很难再换别的产品了。他还透露，OpenAI今年有个大计划，要<strong>把员工从4500人增加到8000人</strong>，主要都是用来改产品体验的。最后还有点意思的是，企业客户的增长速度已经超过了普通用户，所以OpenAI明年的重点也要调整过来。</p></div>
-  </div>
-</div>
-<div class="screen screen-card">
-  <div class="screen-inner">
-    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
-    <img class="card-avatar" src="https://unavatar.io/x/sama" alt="" onerror="this.style.display='none'">
-    <div class="card-name">Sam Altman</div>
-    <div class="card-text">OpenAI的首席执行官，也是ChatGPT背后的核心推手。他一直在思考<strong>AI的下一步方向不是性能，而是如何让AI真正融入生活</strong>，最近的想法是把记忆和个性化当作关键竞争力。</div>
-  </div>
-</div>
-<div class="screen screen-story">
-  <div class="screen-inner">
-    <div class="story-label" style="background:#9b59b6">伦理与安全</div>
-    <div class="story-headline" style="color:#7d3c98">给AI写&#x27;宪法&#x27;的哲学家火了</div>
-    <div class="story-text"><p>在AI越来越强大的背景下，有个更严肃的故事也在发生。Anthropic（就是那个融了30亿美元的AI大公司）有个研究员专门负责<strong>给AI写伦理规则</strong>，她是个来自苏格兰的哲学家，自2021年就在带团队给Claude这个AI定制个性和道德框架。</p><p>最新的Claude版本有个叫<strong>宪法</strong>的东西，里面规定了AI应该怎么表现、怎么思考问题，这位研究员是主要设计者。她最近在社区里讨论了这些背后的哲学思考——怎么才能让一个超级聪明的AI具有同理心、负责任、有原则。有点讽刺的是，特朗普总统最近还公开骂Anthropic是&#x27;觉醒左翼&#x27;，要禁止它给政府部门服务，但这完全阻止不了这些伦理讨论继续进行。</p></div>
-  </div>
-</div>
-<div class="screen screen-card">
-  <div class="screen-inner">
-    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
-    <img class="card-avatar" src="https://unavatar.io/x/AmandaAskell" alt="" onerror="this.style.display='none'">
-    <div class="card-name">Amanda Askell</div>
-    <div class="card-text">Anthropic的资深研究员，专门研究AI的伦理对齐和个性发展。她<strong>用哲学背景来解决AI的道德问题</strong>，是最新Claude宪法的主要设计者，代表了AI安全领域最前沿的思考。</div>
+    <div class="story-label" style="background:#3498db">商业融资</div>
+    <div class="story-headline" style="color:#2471a3">OpenAI砸了1200多亿美元来建数据中心</div>
+    <div class="story-text"><p>说起来，<strong>OpenAI背后的CEO叫山姆·奥特曼</strong>，最近在一个基础设施峰会上坦白说了一些现实话。他说，运营数据中心其实贼难——你得想象一下，在德州某个地方有个巨大的数据中心园区，有一次天气不好，整个园区就瘫痪了。</p><p>最关键的是，OpenAI、甲骨文和软银联手要投<strong>5000亿美元建&quot;星门&quot;项目</strong>，就是一堆巨大的数据中心。奥特曼说的目标很直白：让AI便宜到可以按量计费，就像用电一样随便用。</p><p>最新消息是，OpenAI才完成了<strong>1220亿美元的融资</strong>。同时他们还在招人，计划从4500人扩招到8000人。有意思的是，他们还收购了一些小公司来加强AI安全和测试工具。</p></div>
   </div>
 </div>
 <div class="screen screen-card">
   <div class="screen-inner">
     <div class="card-badge" style="color:#3498db">🏢 公司卡片</div>
-    <img class="card-logo" src="https://logo.clearbit.com/anthropic.com" alt="" onerror="this.style.display='none'">
+    <div class="card-name">OpenAI</div>
+    <div class="card-text">最著名的AI公司，开发了ChatGPT。背后有微软和其他大投资者支持。现在在争取做出最强大的AI模型，同时也在思考AI的安全问题。最近在大规模建设基础设施，想让AI变得像电一样便宜和常见。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#9b59b6">职场预测</div>
+    <div class="story-headline" style="color:#7d3c98">未来的经理不管人，管的是AI代理</div>
+    <div class="story-text"><p>现在讲一个特别有意思的观点。有个叫<strong>韦瑞塞尔的创始人</strong>——他创办了一个叫Vercel的公司，是开发者工具领域的玩家——他预测说，<strong>2026年最关键的企业角色会是&quot;代理管理员&quot;</strong>。</p><p>啥意思呢？就是说，以前的经理是管一队人。以后的经理是管一队AI代理。人类经理要学的新技能，不是怎么开会、怎么做员工评估，而是怎么协调和管理AI工具的运作。</p><p>他还提到了一个问题：公司里现在有很多员工在用AI工具开发东西，但IT部门可能还没反应过来。这叫&quot;影子IT&quot;，就像有一个隐形的IT部门在运作。这个情况会变得越来越普遍。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#5b5ea6">💡 术语卡片</div>
+    <div class="card-name">AI代理（Agent）</div>
+    <div class="card-text">简单说，就是一个AI程序，能自己看情况做决定，然后执行动作。不像ChatGPT只是回答问题，AI代理可以帮你写代码、建网站、甚至管理任务。它能自己判断什么时候该做什么，就像有个虚拟助手24小时待命。</div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#3498db">🏢 公司卡片</div>
     <div class="card-name">Anthropic</div>
-    <div class="card-text">2021年成立的AI安全公司，主要产品是Claude，一个注重安全和伦理的大语言模型。最近融了30亿美元，<strong>估值380亿美元</strong>，是仅次于OpenAI的AI明星公司，特别强调AI的安全性和道德性。</div>
+    <div class="card-text">另一个大AI公司，跟OpenAI是竞争对手。他们开发的AI叫Claude，比较注重<strong>安全和伦理问题</strong>。最近推出了新版本模型，叫Capybara，据说比以前的版本强很多。公司在培训AI的时候特别关注如何让AI的行为更符合人类的价值观。</div>
   </div>
 </div>
 <div class="screen screen-outro">
   <div class="screen-inner">
-    <div class="outro-text">说到底，最近这一周AI圈的故事都指向同一个方向：**AI不只是更强，更重要的是更聪明地用它、更安全地用它、更贴近人生活地用它**。这才是真正的下一步。</div>
+    <div class="outro-text">所以说，2026年AI的三个大趋势就是：AI自己开始做研究了；大公司在疯狂砸钱建基础设施，要让AI变得随处可得；还有，职场在悄悄改变，未来的工作可能是人和AI代理一块儿协作。挺有意思的，对吧？</div>
     <div class="outro-bye">明天见 👋</div>
     <div class="outro-nav"><a href="index.html">📚 历史简报</a></div>
   </div>
