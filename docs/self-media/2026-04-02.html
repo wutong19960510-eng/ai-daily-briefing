@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>创作者罗盘 · 2026-04-02</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 24px;
+    position: relative;
+  }
+  .screen-inner {
+    max-width: 560px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Intro */
+  .screen-intro {
+    background: #fafafa;
+  }
+  .intro-date {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #aaa;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .intro-text {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.7;
+    color: #1a1a1a;
+  }
+  .intro-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #ccc;
+    animation: bounce 2s ease infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+  }
+
+  /* Story */
+  .screen-story {
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .story-label {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .story-headline {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .story-text {
+    font-size: 17px;
+    line-height: 2;
+    color: #2a2a2a;
+  }
+  .story-text p {
+    margin-bottom: 14px;
+  }
+  .story-text p:last-child {
+    margin-bottom: 0;
+  }
+  .story-text strong {
+    color: #1a1a1a;
+    font-weight: 600;
+    background: linear-gradient(to top, rgba(91,94,166,0.12) 40%, transparent 40%);
+    padding: 0 2px;
+  }
+
+  /* Card (人物/公司/术语) */
+  .screen-card {
+    background: #f5f5fa;
+  }
+  .card-badge {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .card-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 14px;
+  }
+  .card-text {
+    font-size: 17px;
+    line-height: 2;
+    color: #444;
+  }
+  .card-text strong {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  /* Outro */
+  .screen-outro {
+    background: #fafafa;
+  }
+  .outro-text {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: #1a1a1a;
+  }
+  .outro-bye {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #aaa;
+  }
+  .outro-nav {
+    margin-top: 28px;
+  }
+  .outro-nav a {
+    font-size: 13px;
+    color: #5b5ea6;
+    text-decoration: none;
+    padding: 8px 18px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+
+  /* Progress dots */
+  .progress {
+    position: fixed;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s;
+  }
+  .dot.active {
+    background: #5b5ea6;
+    transform: scale(1.5);
+  }
+
+  @media (max-width: 480px) {
+    .screen { padding: 32px 20px; }
+    .intro-text { font-size: 20px; }
+    .story-headline { font-size: 20px; }
+    .story-text { font-size: 16px; line-height: 1.95; }
+    .card-name { font-size: 22px; }
+    .outro-text { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress">
+  <div class="dot  active"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+</div>
+
+<div class="screen screen-intro">
+  <div class="screen-inner">
+    <div class="intro-date">创作者罗盘 · 2026-04-02</div>
+    <div class="intro-text">说起最近直播带货这一摊子事儿，还挺有意思的。我今天要给你讲讲这个圈子里发生了什么，为啥感觉规则突然都变了。</div>
+  </div>
+  <div class="intro-hint">↓ 向下滑动</div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#e74c3c">销售神话</div>
+    <div class="story-headline" style="color:#c0392b">董宇辉一年赚233亿，平均每场直播5000万</div>
+    <div class="story-text"><p>你知道吗，有个叫董宇辉的主播，他们团队去年整年的销售额达到了 <strong>233亿元</strong> 。听这个数字可能没概念，但换个角度想——他们平均每场直播就能卖 <strong>5000万到7500万块钱</strong> 。</p><p>说白了，这家伙就是直播带货界的顶流。他甚至在2025年最后一天还办了一场线上音乐会，一下子吸引了超过 <strong>2000万人</strong> 涌进来看，那天光带货就赚了 <strong>7500万到1亿</strong> 。这要放在十年前，想都不敢想有这样的销售力量。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <div class="card-name">董宇辉</div>
+    <div class="card-text">从新东方英语老师转身直播带货主播，建立了「与辉同行」这个直播间。<strong>2025年全年销售额233亿</strong>，成为抖音平台最具商业能力的头部主播之一。他的成功证明了直播带货已经成为一门真正的生意。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#3498db">监管变局</div>
+    <div class="story-headline" style="color:#2471a3">国家出手规范直播带货，头部主播开始面临压力</div>
+    <div class="story-text"><p>但这里面有个问题——赚得越多，管得越严。去年国家市场监管总局和网信办联合公布了 <strong>《直播电商监督管理办法》</strong> ，一时间整个行业都紧张了。</p><p>这个办法的意思就是：国家不让直播电商那么野蛮生长了。最明显的变化是什么呢？以前那些头部主播吃独食的局面得改改。现在平台开始鼓励 <strong>&quot;去头部化&quot;和&quot;扶店播&quot;</strong> ——也就是说，不能只有董宇辉这样的超级明星赚钱，要让更多的小店铺、小商家也有机会。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#5b5ea6">💡 术语卡片</div>
+    <div class="card-name">去头部化与扶店播</div>
+    <div class="card-text">说白了，这是一个分蛋糕的问题。<strong>去头部化</strong> 意思是不能让头部主播把所有流量、所有生意都垄断了；<strong>扶店播</strong> 就是平台要扶持普通商家自己开直播间卖货。目的是让小商家也能通过直播赚钱，而不是只有大明星吃肉，小商家喝汤。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#9b59b6">内容新玩法</div>
+    <div class="story-headline" style="color:#7d3c98">小红书把&quot;种草&quot;变成了直接下单，改变购物逻辑</div>
+    <div class="story-text"><p>有意思的是，虽然国家在规范，但这些平台自己也在找新的增长点。小红书在去年的年度大会上 <strong>WILL大会</strong> 上，发布了一个新概念叫 <strong>&quot;种草的效果化时代&quot;</strong> 。</p><p>听起来挺专业，但其实就是他们想把&quot;看笔记、种草&quot; 和 &quot;立即购买&quot; 这两个事儿连在一起。以前用户看完小红书上的推荐，还要自己去找购买链接；现在小红书打通了，用户看到种草内容，点一下就能直接下单。这么一改，直播和购物的边界就更模糊了。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#3498db">🏢 公司卡片</div>
+    <div class="card-name">小红书</div>
+    <div class="card-text">一个以 <strong>女性内容分享</strong> 为主的社交平台，用户在上面分享生活、穿搭、美妆心得等。最近几年越来越像电商平台，通过<strong>&quot;种草&quot;（推荐内容）来直接驱动购买</strong>。在直播电商竞争激烈的时代，小红书想找的是从内容到购买的新路径。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#e67e22">内容创意突破</div>
+    <div class="story-headline" style="color:#ca6f1e">主播不只直播卖货，还在做极限挑战赚热度</div>
+    <div class="story-text"><p>当然，聪明的主播们也没闲着。有个叫影视飓风的创意团队，他们2025年1月做了个 <strong>&quot;雪地生存100小时&quot;</strong> 的直播挑战，结果直播间的弹幕量达到了 <strong>237万条</strong> ——这说明有多少人在看、在聊。</p><p>他们的目的不只是搞噱头，而是用这些极限内容来吸引流量，然后卖货。结果呢，他们的电商生意反而成了绝对主力——单款T恤卖出了 <strong>20多万件</strong> ，近90天的直播销售额就有 <strong>1000万到2500万</strong> 。说白了，用创意内容来积累人气，然后通过卖货变现，这已经成了新套路。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <div class="card-name">影视飓风</div>
+    <div class="card-text">一个以<strong>极限挑战和创意视频</strong>出名的内容创作团队。他们把自己的内容热度转化成电商能力，单款商品销量能破20万，证明了<strong>有创意、有粉丝黏性的主播，电商变现能力往往更强</strong>。</div>
+  </div>
+</div>
+<div class="screen screen-outro">
+  <div class="screen-inner">
+    <div class="outro-text">归根结底，直播带货这个行业正在重新洗牌。国家要规范，平台要创新，主播要创意——未来赚大钱的，恐怕不是单纯的销售能力，而是谁能把内容、热度和商业结合得更聪明。</div>
+    <div class="outro-bye">明天见 👋</div>
+    <div class="outro-nav"><a href="index.html">📚 历史简报</a></div>
+  </div>
+</div>
+
+
+<script>
+  const screens = document.querySelectorAll('.screen');
+  const dots = document.querySelectorAll('.dot');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = [...screens].indexOf(entry.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.5 });
+  screens.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
