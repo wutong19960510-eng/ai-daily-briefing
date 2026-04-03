@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AI 简报 · 2026-04-03</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 24px;
+    position: relative;
+  }
+  .screen-inner {
+    max-width: 560px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Intro */
+  .screen-intro {
+    background: #fafafa;
+  }
+  .intro-date {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #aaa;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .intro-text {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.7;
+    color: #1a1a1a;
+  }
+  .intro-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #ccc;
+    animation: bounce 2s ease infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+  }
+
+  /* Story */
+  .screen-story {
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .story-label {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .story-headline {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .story-text {
+    font-size: 17px;
+    line-height: 2;
+    color: #2a2a2a;
+  }
+  .story-text p {
+    margin-bottom: 14px;
+  }
+  .story-text p:last-child {
+    margin-bottom: 0;
+  }
+  .story-text strong {
+    color: #1a1a1a;
+    font-weight: 600;
+    background: linear-gradient(to top, rgba(91,94,166,0.12) 40%, transparent 40%);
+    padding: 0 2px;
+  }
+
+  /* Card (人物/公司/术语) */
+  .screen-card {
+    background: #f5f5fa;
+  }
+  .card-badge {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .card-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 14px;
+  }
+  .card-text {
+    font-size: 17px;
+    line-height: 2;
+    color: #444;
+  }
+  .card-text strong {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  /* Outro */
+  .screen-outro {
+    background: #fafafa;
+  }
+  .outro-text {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: #1a1a1a;
+  }
+  .outro-bye {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #aaa;
+  }
+  .outro-nav {
+    margin-top: 28px;
+  }
+  .outro-nav a {
+    font-size: 13px;
+    color: #5b5ea6;
+    text-decoration: none;
+    padding: 8px 18px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+
+  /* Progress dots */
+  .progress {
+    position: fixed;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s;
+  }
+  .dot.active {
+    background: #5b5ea6;
+    transform: scale(1.5);
+  }
+
+  @media (max-width: 480px) {
+    .screen { padding: 32px 20px; }
+    .intro-text { font-size: 20px; }
+    .story-headline { font-size: 20px; }
+    .story-text { font-size: 16px; line-height: 1.95; }
+    .card-name { font-size: 22px; }
+    .outro-text { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress">
+  <div class="dot  active"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+</div>
+
+<div class="screen screen-intro">
+  <div class="screen-inner">
+    <div class="intro-date">AI 简报 · 2026-04-03</div>
+    <div class="intro-text">最近AI圈发生了一堆大事儿。说白了，整个行业从拼模型本身转向了用模型干实际的活儿，而且越来越多人相信AI代理——就是那种能替你自动工作的AI——马上要改变我们工作的方式。今天咱们聊几个最关键的变化。</div>
+  </div>
+  <div class="intro-hint">↓ 向下滑动</div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#e74c3c">独立研究的新玩法</div>
+    <div class="story-headline" style="color:#c0392b">有个AI现在能自己做科研，一晚上跑100多个实验</div>
+    <div class="story-text"><p>你知道吗，有个在特斯拉做过AI主管的研究员叫卡帕西，最近搞出来一个叫&quot;自动研究&quot;的东西。说白了，就是让一个AI代理自己去改进机器学习模型，不需要人手把手教。</p><p>这个系统有多牛呢？它每个小时能做12个实验，一个晚上能累积将近100次测试。就像给了AI一个自动化的科研助手的工作。而且最绝的是，他现在还在想下一步怎么搞——<strong>把这种模式变成像SETI寻外星人一样的分布式合作</strong>，让成千上万的AI一起研究，而不是只有一台电脑在干活。</p><p>这意味着什么呢？以前人类科学家需要花几周的时间验证一个想法，现在AI可能几小时就给你答案了。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <div class="card-name">卡帕西（Andrej Karpathy）</div>
+    <div class="card-text">前特斯拉AI部门主管，现在是一位独立AI研究员。他最有名的是推出了<strong>&quot;自动研究&quot;项目</strong>，让AI能自主进行机器学习实验。他还演示过一个名叫&quot;多比&quot;的AI代理，能自己扫描家里的设备然后控制它们。在AI从理论走向实际应用的过程中，他的工作代表了一个很重要的转变。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#3498db">AI写代码的革命</div>
+    <div class="story-headline" style="color:#2471a3">编程不再是程序员的专属，任何人都能让AI帮忙写软件</div>
+    <div class="story-text"><p>现在最火的应用场景其实是<strong>用AI来写代码</strong>。有一家叫Replit的公司，就是一个在线编程平台，最近融了4亿美元，估值达到90亿美元。他们的CEO一句话总结了整个趋势：&quot;我们在创建一个新的软件开发类别，任何人都可以编码。&quot;</p><p>怎么实现的呢？他们最新的编码代理叫Agent 4，用了一个听起来很有意思的方式叫&quot;氛围编码&quot;。你不用写一行代码，就直接用自然语言说&quot;我想要一个什么功能&quot;，然后<strong>用手指在数字画布上草绘一下</strong>，AI就能实时把这些想法变成真正能运行的软件。</p><p>这意味着，以后你不需要学几年编程，就能自己做出app来。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#3498db">🏢 公司卡片</div>
+    <div class="card-name">Replit</div>
+    <div class="card-text">一个在线代码编辑和协作平台，让开发者能在浏览器里写代码。最近推出的AI编码助手让非技术人员也能创建软件。刚融了4亿美元，目标是2026年底实现10亿美元的年收入。在AI赋能下一代开发者这件事上，他们走得特别快。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#9b59b6">大佬之间的博弈</div>
+    <div class="story-headline" style="color:#7d3c98">OpenAI突然砍掉10亿美元项目，为了集中精力搞AI代理</div>
+    <div class="story-text"><p>这个新闻有点震撼。OpenAI的CEO阿尔特曼在3月底突然宣布，他们要关闭一个叫Sora的视频生成平台。这个平台之前还和迪士尼达成了一个<strong>10亿美元的投资协议</strong>，但现在全砍了。</p><p>为什么呢？阿尔特曼的理由是——<strong>OpenAI需要把所有的计算能力和产品精力，都集中到下一代自动研究员和公司上</strong>。简单说，就是他们判断未来最值钱的不是生视频，而是能自动干活的AI代理。</p><p>有意思的是，Sora的研究团队不是被遣散了，而是转向开发&quot;世界模型&quot;——就是让AI能理解和模拟真实世界的能力，这是做机器人的基础。所以这不是放弃，而是<strong>all in到他们认为更重要的方向</strong>。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#5b5ea6">💡 术语卡片</div>
+    <div class="card-name">AI代理（AI Agent）</div>
+    <div class="card-text">就是一个能自主完成任务的AI系统，不需要每一步都有人告诉它做什么。比如，你告诉它&quot;帮我回复这10封邮件&quot;，它就能自己打开邮件、读内容、写回复、发送，全流程自动搞定。AI代理现在是整个行业最看好的应用方向，因为它最接近真正解放人类劳动力。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#e67e22">被代理改变的工作</div>
+    <div class="story-headline" style="color:#ca6f1e">从此以后，管理AI代理可能比管理人更重要</div>
+    <div class="story-text"><p>这个观点来自一个叫Vercel的公司的创始人。Vercel是做网站部署的平台，他们也在积极拥抱AI。CEO提出了一个挺有意思的概念：<strong>&quot;代理管理员&quot;——未来企业最关键的职位，就是一个人坐在那儿协调AI代理的舰队，而不是管理人员团队</strong>。</p><p>这听起来有点科幻，但仔细想想很合理。他们已经有300万用户在用一个叫v0的AI工具了。Y Combinator那边的数据也显示，整个AI代理活动中，<strong>软件工程占了快一半</strong>，但医疗、法律、教育这些传统高级行业的占比才1%左右。说明代理首先攻占的还是最容易自动化的领域。</p><p>但有个CEO提醒得挺对：AI代理未来也不是要彻底代替SaaS软件，而是会形成一个<strong>混合模式</strong>。因为有些业务流程需要稳定和确定性，不能全靠AI的随意。</p></div>
+  </div>
+</div>
+<div class="screen screen-card">
+  <div class="screen-inner">
+    <div class="card-badge" style="color:#e74c3c">👤 人物卡片</div>
+    <div class="card-name">阿尔特曼（Sam Altman）</div>
+    <div class="card-text">OpenAI的CEO，推动了ChatGPT的商业化和全球推广。最近的决定是砍掉Sora视频平台，转向开发AI代理技术。他的战略思路代表了整个行业的一个转变：从追求炫酷的生成能力，转向追求能干实际工作的自主AI系统。</div>
+  </div>
+</div>
+<div class="screen screen-story">
+  <div class="screen-inner">
+    <div class="story-label" style="background:#1abc9c">安全和伦理没人注意？</div>
+    <div class="story-headline" style="color:#148f77">Anthropic内部研究显示，用AI编程改变了工程师的整个工作方式</div>
+    <div class="story-text"><p>有家公司叫Anthropic，他们做的Claude是最安全靠谱的AI助手之一。最近他们做了个调查——访问了132名内部工程师和研究员，想看看AI到底怎么改变人们的工作。</p><p>结果挺有意思：<strong>工程师完成了更多工作，变得更&quot;全栈&quot;了</strong>——就是说，一个人能做以前需要好几个专家才能搞定的事儿。大家都学得更快、迭代得更快。但同时，也有人表示有点担忧——虽然没详细说是啥担忧。</p><p>这件事说明了什么呢？AI代理不仅仅在改变我们做事的方式，还在改变我们对工作的定义。你不再需要死死地专精一个领域，因为AI能帮你补齐短板。</p></div>
+  </div>
+</div>
+<div class="screen screen-outro">
+  <div class="screen-inner">
+    <div class="outro-text">总结一下今天的要点：AI行业在2026年最大的转变是**从造模型转向用模型干活**。代码和软件开发最先被AI代理攻占，但这只是开始。未来的工作方式很可能是人和AI代理协作，而不是AI完全取代人。最关键的是，这一切变化的速度比大多数人想象的都快得多。</div>
+    <div class="outro-bye">明天见 👋</div>
+    <div class="outro-nav"><a href="index.html">📚 历史简报</a></div>
+  </div>
+</div>
+
+
+<script>
+  const screens = document.querySelectorAll('.screen');
+  const dots = document.querySelectorAll('.dot');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = [...screens].indexOf(entry.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.5 });
+  screens.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
